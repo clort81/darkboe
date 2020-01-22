@@ -2,6 +2,7 @@ Dark Blades of Exile
 =======================
 
 This project hosts Clort's remastered graphics version of Open Blades of Exile 
+https://github.com/calref/cboe
 
 All colors have been changed. All fonts have been changed, and most graphics 
 assets have been changed to 'No More Tears' versions.
