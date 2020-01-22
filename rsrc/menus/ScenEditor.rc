@@ -1,0 +1,199 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "scenresource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_BLADESOFEXILE       ICON                    "../../../rsrc/icons/win/BOE Editor.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "scenresource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New Scenario\tCtrl+N",       IDM_FILE_NEW
+        MENUITEM "&Open Scenario\tCtrl+O",      IDM_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "&Close Scenario\tCtrl+W",     IDM_FILE_CLOSE
+        MENUITEM "&Save Scenario\tCtrl+S",      IDM_FILE_SAVE
+        MENUITEM "Save &As\tCtrl+Shift+S",      IDM_FILE_SAVE_AS
+        MENUITEM "&Revert to Saved",            IDM_FILE_REVERT
+        MENUITEM SEPARATOR
+        MENUITEM "&Quit\tCtrl+Q",               IDM_FILE_QUIT
+    END
+    POPUP "Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               IDM_EDIT_UNDO
+        MENUITEM "&Redo\tCtrl+Y",               IDM_EDIT_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                IDM_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               IDM_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              IDM_EDIT_PASTE
+        MENUITEM "&Delete",                     IDM_EDIT_DELETE
+        MENUITEM "Select &All\tCtrl+A",         IDM_EDIT_SELECT
+    END
+    POPUP "&Scenario"
+    BEGIN
+        MENUITEM "&Create New Town",            IDM_SCEN_NEW_TOWN
+        MENUITEM "Resize Outdoors",             IDM_SCEN_RESIZE_OUTDOORS
+        MENUITEM SEPARATOR
+        MENUITEM "&Scenario Details",           IDM_SCEN_DETAILS
+        MENUITEM "Scenario Intr&o Text",        IDM_SCEN_INTRO
+        MENUITEM "Edit Custom Graphic Sheets",  IDM_SCEN_CUSTOM_SHEETS
+        MENUITEM "Classify Custom &Graphics",   IDM_SCEN_CUSTOM_PICS
+        MENUITEM "Edit Custom Sounds",          IDM_SCEN_CUSTOM_SNDS
+        MENUITEM SEPARATOR
+        MENUITEM "Advanced:",                   IDM_GRAYED_LABEL, GRAYED
+        MENUITEM "  Edit Special &Nodes",       IDM_SCEN_ADV_SPECIALS
+        MENUITEM "  Edit Scenario &Text",       IDM_SCEN_ADV_TEXT
+        MENUITEM "  Edit Journal Entries",      IDM_SCEN_ADV_JOURNAL
+        MENUITEM "  &Import Town",              IDM_SCEN_ADV_IMPORT_TOWN
+        MENUITEM "  Import Outdoor Sector",     IDM_SCEN_ADV_IMPORT_OUT
+        MENUITEM "  Edit Saved Item &Rectangles", IDM_SCEN_ADV_SAVE_RECTS
+        MENUITEM "  Set &Variable Town Entry",  IDM_SCEN_ADV_TOWN_VARY
+        MENUITEM "  Set Scenario &Event Timers", IDM_SCEN_ADV_EVENTS
+        MENUITEM "  Edit Item &Placement Shortcuts", IDM_SCEN_ADV_SHORTCUTS
+        MENUITEM "  &Delete Last Town",         IDM_SCEN_ADV_DELETE_TOWN
+        MENUITEM "  Write D&ata To Text File",  IDM_SCEN_ADV_DATA_DUMP
+        MENUITEM "  Do &Full Text Dump",        IDM_SCEN_ADV_TEXT_DUMP
+        MENUITEM "  Scenario Shoppin&g Text Dump", 1000
+        MENUITEM "  Scenario &Monster Dump",    1000
+        MENUITEM "  Scenario Specials D&ump",   1000
+        MENUITEM "  Scenario Ob&ject Data Dump", 1000
+    END
+    POPUP "&Town"
+    BEGIN
+        MENUITEM "Town &Details\tCtrl+D",       IDM_TOWN_DETAILS
+        MENUITEM "Town &Wandering Monsters",    IDM_TOWN_WANDER
+        MENUITEM "Set Town &Boundaries",        IDM_TOWN_BOUNDS
+        MENUITEM "&Frill Up Terrain",           IDM_TOWN_FRILL
+        MENUITEM "&Remove Terrain Frills",      IDM_TOWN_UNFRILL
+        MENUITEM "Edit &Area Descriptions",     IDM_TOWN_AREAS
+        MENUITEM SEPARATOR
+        MENUITEM "Set Starting &Location",      IDM_SCEN_START
+        MENUITEM "Add Rand&om Items",           IDM_TOWN_RANDOM_ITEMS
+        MENUITEM "Set All Items Not Propert&y", IDM_TOWN_NOT_PROPERTY
+        MENUITEM "Clear All &Items",            IDM_TOWN_CLEAR_ITEMS
+        MENUITEM SEPARATOR
+		MENUITEM "Advanced:",                   IDM_GRAYED_LABEL, GRAYED
+        MENUITEM "  Edit Special &Nodes\tCtrl+1", IDM_TOWN_ADV_SPECIALS
+        MENUITEM "  Edit Town &Text\tCtrl+2",   IDM_TOWN_ADV_TEXT
+        MENUITEM "  Edit Town &Signs\tCtrl+3",  IDM_TOWN_ADV_SIGNS
+        MENUITEM "  Advanced Town Detai&ls\tCtrl+4", IDM_TOWN_ADV_DETAILS
+        MENUITEM "  Set Town &Event Timers\tCtrl+5", IDM_TOWN_ADV_EVENTS
+        MENUITEM "  Concise Town Report\tCtrl+6", IDM_TOWN_ADV_REPORT
+    END
+    POPUP "&Outdoors"
+    BEGIN
+        MENUITEM "Outdoor &Details\tCtrl+D",    IDM_OUT_DETAILS
+        MENUITEM "Outdoor &Wandering Monsters", IDM_OUT_WANDER
+        MENUITEM "Outdoor Special &Encounters", IDM_OUT_ENCOUNTER
+        MENUITEM "&Frill Up Terrain",           IDM_OUT_FRILL
+        MENUITEM "&Remove Terrain Frills",      IDM_OUT_UNFRILL
+        MENUITEM "Edit &Area Descriptions",     IDM_OUT_AREAS
+        MENUITEM SEPARATOR
+        MENUITEM "Set Starting &Location",      IDM_OUT_START
+        MENUITEM SEPARATOR
+        MENUITEM "Advanced:",                   IDM_GRAYED_LABEL, GRAYED
+        MENUITEM "  Edit Special &Nodes\tCtrl+7", IDM_OUT_ADV_SPECIALS
+        MENUITEM "  Edit Outdoor &Text\tCtrl+8", IDM_OUT_ADV_TEXT
+        MENUITEM "  Edit Outdoor &Signs\tCtrl+9", IDM_OUT_ADV_SIGNS
+        MENUITEM "  Concise Outdoor Report\tCtrl+0", IDM_OUT_ADV_REPORT
+    END
+    POPUP "E&xtras"
+    BEGIN
+        MENUITEM "Terrain &Animations Play",    411
+        MENUITEM SEPARATOR
+        MENUITEM "Edit &Town\tCtrl+T",          401
+        MENUITEM "Edit Outdoo&r\tCtrl+R",       402
+        MENUITEM "&Load Another Outdoor Zone/Town\tCtrl+L", 403
+        MENUITEM SEPARATOR
+        MENUITEM "&Edit Terrain Types\tCtrl+E", 404
+        MENUITEM "Edit &Monsters\tCtrl+F",      405
+        MENUITEM "Edit &Items\tCtrl+G",         406
+        MENUITEM SEPARATOR
+        MENUITEM "Return to Main &Screen\tCtrl+M", 407
+        MENUITEM "Switch &Viewing Mode\tCtrl+I", 408
+        MENUITEM "Load &Previous Outdoor Zone/Town\tCtrl+J", 409
+        MENUITEM "Load &Next Outdoor Zone/Town\tCtrl+K", 410
+        MENUITEM SEPARATOR
+        MENUITEM "Repeat Printing of Last &File\tCtrl+P", 414
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Index\tF1",                  IDM_HELP_INDEX
+        MENUITEM "&About Blades Scenario Editor", IDM_HELP_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Getting Started",            IDM_HELP_START
+        MENUITEM "&Testing Your Scenario",      IDM_HELP_TEST
+        MENUITEM "&Distributing Your Scenario", IDM_HELP_DISTRIBUTE
+    END
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

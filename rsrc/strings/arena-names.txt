@@ -1,0 +1,20 @@
+Grassy field
+Ordinary cave
+Mountain
+Surface bridge
+Cave bridge
+Rubble-strewn cave
+Cave forest
+Cave mushrooms
+Cave swamp
+Surface rocks
+Surface swamp
+Surface woods
+Shrubbery
+Stalagmites
+Cave fumarole
+Surface fumarole
+Cave Camp
+Surface Camp
+Cave Crops
+Surface Crops

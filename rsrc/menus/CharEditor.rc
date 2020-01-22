@@ -1,0 +1,144 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "pcresource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_BLADESOFEXILE       ICON                    "../../../rsrc/legacy/pced_old.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "pcresource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open Game\tCtrl+O",          IDM_FILE_OPEN
+        MENUITEM "Close\tCtrl+W",               IDM_FILE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "&Save Game\tCtrl+S",          IDM_FILE_SAVE
+        MENUITEM "Save As...",                  IDM_FILE_SAVE_AS
+        MENUITEM "Revert to Saved",             IDM_FILE_REVERT
+        MENUITEM SEPARATOR
+        MENUITEM "&Quit\tCtrl+Q",               IDM_FILE_QUIT
+    END
+    POPUP "&Edit Party"
+    BEGIN
+        MENUITEM "Edit Gold",                   IDM_PARTY_GOLD
+        MENUITEM "Edit Food",                   IDM_PARTY_FOOD
+        MENUITEM "Edit Alchemy",                IDM_PARTY_ALCHEMY
+        MENUITEM SEPARATOR
+        MENUITEM "Heal Damage",                 IDM_PARTY_DAMAGE
+        MENUITEM "Restore Spell Points",        IDM_PARTY_MANA
+        MENUITEM "Raise Dead, Destone, etc.",   IDM_PARTY_DEAD
+        MENUITEM "Remove Bad Conditions",       IDM_PARTY_CONDITIONS
+        MENUITEM SEPARATOR
+        MENUITEM "Edit Mage Spells",            IDM_PARTY_MAGE
+        MENUITEM "Edit Priest Spells",          IDM_PARTY_PRIEST
+        MENUITEM "Edit Traits",                 IDM_PARTY_TRAITS
+        MENUITEM "Edit Skills",                 IDM_PARTY_SKILLS
+        MENUITEM "Edit XP",                     IDM_PARTY_XP
+        MENUITEM SEPARATOR
+        MENUITEM "Reunite Party",               IDM_PARTY_REUNITE
+    END
+    POPUP "&Scenario Editing"
+    BEGIN
+        MENUITEM "Edit Day",                    IDM_SCEN_DAY
+        MENUITEM SEPARATOR
+        MENUITEM "Leave Town",                  IDM_SCEN_LEAVE_TOWN
+        MENUITEM "Make Towns Forget You",       IDM_SCEN_TOWN_RESET
+        MENUITEM "Add All Town Maps",           IDM_SCEN_TOWN_MAP
+        MENUITEM "Add All Outdoor Maps",        IDM_SCEN_OUT_MAP
+        MENUITEM "Own All Boats/Horses",        IDM_PARTY_VEHICLES
+        MENUITEM SEPARATOR
+        MENUITEM "Remove Party From Scenario",  IDM_SCEN_LEAVE
+        MENUITEM "Set Stuff Done Flag",         IDM_SCEN_SDF
+    END
+    POPUP "&I1"
+    BEGIN
+        MENUITEM "None",                        1000
+    END
+    POPUP "&I2"
+    BEGIN
+        MENUITEM "None",                        1001
+    END
+    POPUP "&I3"
+    BEGIN
+        MENUITEM "None",                        1002
+    END
+    POPUP "&I4"
+    BEGIN
+        MENUITEM "None",                        1003
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "About Blades of Exile Editor", IDM_ABOUT
+        MENUITEM "Blades of Exile Editor Help\tF1", IDM_HELP
+    END
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

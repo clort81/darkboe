@@ -1,0 +1,10 @@
+74,77d73
+< // Clort
+<                                // if the specified "/path/name.ext" does not exist, check "/path/name"
+<                                fs::path simplePathWithoutExt = tmpPaths.top()/name;
+< 
+81,84d76
+< // Clort
+<                                 } else if (fs::exists(simplePathWithoutExt)) {
+<                                         pathFound()[name] = simplePathWithoutExt;
+<                                         return simplePathWithoutExt;

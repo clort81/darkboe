@@ -1,0 +1,106 @@
+
+from __future__ import print_function
+import os.path as path
+import subprocess, tarfile
+import os
+walk_dir = os.walk
+
+Import("env platform data_dir install_dir")
+
+# Data
+
+env.Install(path.join(data_dir, "cursors"), Glob("cursors/*.gif"))
+env.Install(path.join(data_dir, "dialogs"), Glob("dialogs/*.xml"))
+env.Install(path.join(data_dir, "fonts"), Glob("fonts/*.ttf"))
+env.Install(path.join(data_dir, "graphics"), Glob("graphics/*.png"))
+env.Install(path.join(data_dir, "sounds"), Glob("sounds/*.wav"))
+env.Install(path.join(data_dir, "strings"), Glob("strings/*.txt"))
+
+env.Install(path.join(data_dir, "shaders"), Glob("#src/gfx/mask.*"))
+
+# Scenarios
+
+def pack_scenario(target, source, env):
+	prev_dir = path.abspath('.')
+	for i in range(min(len(target), len(source))):
+		abspath = path.dirname(source[i].abspath)
+		with tarfile.open(target[i].abspath, 'w:gz') as tar:
+			for dir, subdirs, files in walk_dir(abspath):
+				cur_dir = dir.replace(abspath, 'scenario')
+				for fname in files:
+					if fname.startswith('.'): continue
+					cur_file = path.join(cur_dir, fname)
+					tar.add(path.join(dir, fname), arcname = cur_file)
+
+env.Append(BUILDERS={"BuildScenario": Builder(action=pack_scenario, suffix=".boes", src_suffix="")})
+
+env.BuildScenario('#build/rsrc/bases/bladbase.boes', 'bases/bladbase/header.exs')
+env.BuildScenario('#build/rsrc/scenarios/busywork.boes', 'scenarios/busywork/header.exs')
+env.BuildScenario('#build/rsrc/scenarios/valleydy.boes', 'scenarios/valleydy/header.exs')
+env.BuildScenario('#build/rsrc/scenarios/stealth.boes', 'scenarios/stealth/header.exs')
+env.BuildScenario('#build/rsrc/scenarios/zakhazi.boes', 'scenarios/zakhazi/header.exs')
+
+env.Install(path.join(install_dir, "Blades of Exile Scenarios"), Glob("#build/rsrc/scenarios/*.boes"))
+env.Install(path.join(install_dir, "Blades of Exile Base"), Glob("#build/rsrc/bases/*.boes"))
+
+# Validate dialogs
+
+have_xmllint = False
+
+nulldev = open(os.devnull, 'w')
+
+if ((str(platform) != "win32" and subprocess.call(['which', 'xmllint'], stdout=nulldev, stderr=nulldev) == 0) or
+		(str(platform) == "win32" and subprocess.call(['where', '/Q', 'xmllint'])) == 0):
+	have_xmllint = True
+	xmllint_command = ('xmllint', '--nonet', '--noout', '--schema', '../schemas/dialog.xsd')
+
+if have_xmllint: # This is separate so that alternate xml validators could be used
+	def validate_dialog(target, source, env):
+		PIPE = subprocess.PIPE
+		with open(target[0].abspath, 'w') as log:
+			src_name = path.basename(source[0].path)
+			cmd_line = xmllint_command + (src_name,)
+			print(*cmd_line)
+			p = subprocess.Popen(cmd_line,
+				bufsize=1, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+				cwd=source[0].Dir('.').abspath
+			)
+			out, err = p.communicate()
+			print(err, end='')
+			print(err, file=log)
+			return p.returncode
+	# We use these .log files as dummy targets, basically (though they also store the validation results)
+	env.Append(BUILDERS={"ValidateDialogXml": Builder(action=validate_dialog,suffix='.log',src_suffix='.xml')})
+	for dlg in Glob('dialogs/*.xml'):
+		dlg = path.basename(dlg.path).split('.')[0]
+		env.ValidateDialogXml(path.join("#build/dialogs", dlg), path.join("dialogs", dlg))
+else:
+	print("Note: Skipping XML dialog validation since no validator tool was found.")
+
+# Assign custom icons
+
+if str(platform) == "darwin":
+	def set_dir_icon(env, target, source):
+		env.Command(target, source, action = [
+			Mkdir("build/rsrc/icons"),
+			"sips -i $SOURCE --out build/rsrc/icons/${SOURCE.file}",
+			"DeRez -only icns build/rsrc/icons/${SOURCE.file} > \
+				build/rsrc/icons/${SOURCE.filebase}.rsrc",
+			"Rez -append build/rsrc/icons/${SOURCE.filebase}.rsrc -o $TARGET",
+			"SetFile -a C ${TARGET.dir}",
+			"chflags hidden $TARGET",
+		])
+	env.AddMethod(set_dir_icon, "SetDirIcon")
+	icons = {
+		'': 'boeresources.icns',
+		'dialogs/': 'boeresources.icns',
+		'strings/': 'boeresources.icns',
+		'cursors/': 'boegraphics.icns',
+		'graphics/': 'boegraphics.icns',
+		'sounds/': 'boesounds.icns',
+	}
+	for dir, icon in icons.items():
+		env.SetDirIcon(
+			path.join("#build/Blades of Exile/data", dir, 'Icon\r'),
+			path.join("icons/mac/", icon)
+		)

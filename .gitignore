@@ -1,0 +1,94 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+*.res
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Win32 Code::Blocks directories and trash
+Win32/*/bin
+Win32/*/obj
+*.layout
+*.depend
+*blades.ini
+
+# build.sh output directories and files
+obj/
+exe/
+configvars.make
+
+# XCode Junk Files
+proj/xc*/*.xcodeproj/**/xcuserdata
+proj/xc*/*.xcodeproj/**/*.xccheckout
+proj/xc*/*.xcodeproj/*.mode*
+proj/xc*/*.xcodeproj/*.pbxuser
+
+# Visual Studio Junk Files
+proj/vs*/*sdf
+proj/vs*/*/*.user
+proj/vs*/*.suo
+proj/vs*/*.aps
+proj/vs*/*/*.aps
+proj/vs*/*/Debug/
+proj/vs*/*/Release/
+proj/vs*/*/x64/
+proj/vs*/Debug/
+proj/vs*/Release/
+proj/vs*/x64/
+proj/vs*/*/ipch/
+proj/vs*/.vs
+proj/vs*/.vs
+proj/vs*/packages/
+
+# SCons junk files
+.sconsign.dblite
+.sconsign.tmp
+build/
+deps/
+
+# Generated NSIS script file
+pkg/win/data.nsi
+
+# Shader Builder projects
+# It's an sqlite3 database and not particularly important, so exclude it
+*.sbproj
+
+# Doxygen stuff
+src/doxy/html/
+src/doxy/doxy_warnings.txt
+
+# Mac junk files
+.DS_Store
+
+# Windows junk files
+Thumbs.db
+
+# Test case junk files
+test/junk/*.xml
+test/junk/*.spec
+test/junk/*.map
+
+# Packed scenarios
+*.boes
+
+# Misc
+*~
+oldstructs.txt
+src/tools/gitrev.hpp
+rsrc/**/scenario

@@ -1,0 +1,14 @@
+Random Trap (out of next 4)
+Knife Trap
+Poison Dart
+Poison Gas (affects whole party)
+Explosion (affects whole party)
+Paralysis Ray
+False Alarm (no trap)
+Weakness (drain XP)
+Alarm (town hostile)
+Flames
+Dumbfound
+Disease
+Foul Spray (disease all)
+Custom Effect

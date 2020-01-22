@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>exg</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>boesave</string>
+			<key>CFBundleTypeName</key>
+			<string>SavedGame</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>beSV</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.spidweb.bladesofexile.savegame</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>Binary</string>
+		</dict>
+	</array>
+	<key>CFBundleExecutable</key>
+	<string>BoE Character Editor</string>
+	<key>CFBundleIconFile</key>
+	<string>BoECharEd</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.spidweb.boepceditor</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>blxe</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.archive</string>
+				<string>org.gnu.gnu-zip-tar-archive</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Blades of Exile Saved Game</string>
+			<key>UTTypeIconFile</key>
+			<string>boesave</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.spidweb.bladesofexile.savegame</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>exg</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>

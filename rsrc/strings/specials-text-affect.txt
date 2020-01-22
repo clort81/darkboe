@@ -1,0 +1,448 @@
+Select a target
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+0 - only living, 1 - any, 2 - all, 3 - dead, 4 - inv. space
+Special if Cancel button pressed
+Unused
+0 - player choice, 1 - random, 2 - specific
+0..6 - PC, 100+ - monster (if above = 2)
+Unused
+Special to Jump To
+--------------------
+Do Damage
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Number of dice
+Number of 'sides' on dice
+Unused
+Amount of extra damage
+Type of damage (0..8)
+Sound to play
+Special to Jump To
+--------------------
+Affect Health
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount
+0 - raise, 1 - lower
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Spell Points
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount
+0 - raise, 1 - lower
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Experience
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount (0 .. 100)
+0 - raise, 1 - lower
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Skill Points
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount (0 .. 10)
+0 - raise, 1 - lower
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Kill/Raise Dead
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+0 - dead, 1 - dust,  2- stoned
+0 - raise dead, 1 - hurt
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Status Effect
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount (usually 0 .. 8)
+0 - help, 1 - harm
+Which effect (0 .. 14)
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Traits
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Which trait
+0 - give, 1 - take
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Action Points
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+How many AP
+0 - give, 1 = take
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Name
+Unused
+Unused
+First part of message
+Second part of message
+New name
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Level
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Number of levels
+0 - add levels, 1 - remove
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Morale
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount to change
+0 - increase, 1 - decrease
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Soul Crystal
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+0 - record, 1 - erase
+0 - allow resist, 1 - force
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Give Equipment
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Special to call if inventory full
+Unused
+Which item
+Which enchantment (if weapon)
+Number of charges (-1 = default)
+ID? (-1 - normal, 0 - no, 1 - yes, 2 - full)
+Cursed? (-1 - default, 0 - no, 1 - yes)
+Equip? (-1 - no, 0 - soft, 1 - try, 2 - force)
+Special to Jump To
+--------------------
+Affect Monster Target
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+New target (0-5 PC, 100+x monster x)
+Unused
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Monster Attack
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Attack to change (0 ... 2)
+Amount to change dice
+Amount to change sides
+0 - increase, 1 - decrease
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Monster Statistic
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount to change
+0 - increase, 1 - decrease
+Unused
+Which stat (0 ... 10)
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Statistic
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Chance of changing (0 - 100)
+Unused
+Amount (0 .. 10)
+0 - increase, 1 - decrease
+Unused
+Statistic to adjust (0..20)
+Unused
+Unused
+Special to Jump To
+--------------------
+Give Mage Spell
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Which Spell (0 .. 61)
+1 - remove, 0 - give
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Give Priest Spell
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Which Spell (0 .. 61)
+1 - remove, 0 - give
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Gold
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount (0 .. 25000)
+0 - increase, 1 - decrease
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Food
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount (0 .. 25000)
+0 - increase, 1 - decrease
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Alchemy
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Which Recipe (0 .. 19)
+Unused
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Affect Party Status Effect
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Amount (0 .. 250)
+0 - increase, 1 - decrease
+Unused
+Which effect (0 .. 3)
+Unused
+Unused
+Special to Jump To
+--------------------
+Create New PC
+Stuff Done Flag Part A
+Stuff Done Flag Part B
+First part of message
+Second part of message
+PC name
+Which graphic
+Special to call if no room
+PC health
+PC spell points
+PC race
+PC strength
+PC dexterity
+PC intelligence
+Special to Jump To
+--------------------
+Store PC
+Stuff Done Flag Part A
+Stuff Done Flag Part B
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+If 1, just store ID in SDF and leave PC in party
+extra 1b
+extra 1c
+extra 2a
+extra 2b
+extra 2c
+Special to Jump To
+--------------------
+Unstore PC
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Unique ID of PC to unstore
+Special to call if no room
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------

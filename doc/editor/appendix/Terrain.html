@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <title>Starting Terrain Types - BoE Scenario Editor Guide</title>
+  <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="navbar">
+<script src='../nav.js' type='application/javascript'></script>
+<noscript>Javascript required for the navbar.</noscript>
+</div>
+<div class="content">
+
+<h1>Appendix D - Starting Terrain Types</h1>
+
+<p>There are 256 premade terrain types (numbered 0 - 255) in the basic scenario you start
+with. Many of them have special properties, or need to be handled in different ways.
+This appendix also notes which terrain types are used by the default combat arenas.</p>
+
+<ul>
+<li>Type 0,1 - Cave Floors (2 types)</li>
+<li>Type 2,3,4 - Grass (3 types)</li>
+<li>Type 5-21 - Cave Walls: Terrain 7, 10, 13, and 16 are secret passages. The party can
+walk through them. Like hills, mountains, and water, the editor automatically adjusts the
+walls while youre drawing them.</li>
+<li>Type 22-35 - Mountains: Type 23 is high mountains, which cant be flown over. Mountains
+are automatically surrounded with hills while youre drawing them.</li>
+<li>Type 36-49 - Hills</li>
+<li>Type 50-62 - Surface Water</li>
+<li>Type 63-74 - Various waters, with rocks, bridges, etc.: Note that some of these waters
+are darker and animated, unlike the lighter earlier waters. These darker water spaces are
+generally used for subterranean water.</li>
+<li>Type 75,76 - Lava: The second lava type doesnt do damage.</li>
+<li>Type 77 - Waterfall: When the party moves to the space north of this in a boat, they
+will be thrown two spaces to the south and will lose some food.</li>
+<li>Type 78 - Portal</li>
+<li>Type 79, 80, 81 - Roads (Cave, Grass, Hill): When drawn in the game, the road spaces
+will be connected by drawn roads. Roads only go up, down, left, and right, not diagonally.
+You can have a road be drawn smoothly from grass onto hills. To have the road continue
+unbroken, set the spot of terrain at the border between grass and hills to be hill w. road
+(not grass w. road).</li>
+<li>Type 82, 83 - Cave and Grass Walkway: Only use the former when drawing walkways on
+cave floor. Use the latter when drawing walkways around grass.</li>
+<li>Type 84-89 - Rubble</li>
+<li>Type 90 - Pit</li>
+<li>Type 91-100 - Cave floor terrains (trees, mushrooms, etc.). The swamp poisons the
+party when they walk on it.</li>
+<li>Type 101-109 - Cave terrains (boxes, bodies, etc.). Note that the box and body terrain
+types are containers.</li>
+<li>Type 110-121 - Grass terrains (trees, shrubbery, etc.). The swamp poisons the party
+when they walk on it.</li>
+<li>Type 122 - Basic Wall</li>
+<li>Type 123,124 - Wall w. Secret Door, Wall w. Visible Secret Door: When the party walks
+into the former, it turns into the latter.</li>
+<li>Type 125 - Wall w. Door (Unlocked): Turns into Open Door when walked into.</li>
+<li>Type 126 - Wall w. Door (Locked): Can be picked or bashed to turn into Door
+(Unlocked)</li>
+<li>Type 127 - Wall w. Door (Magically Locked): Must cast Unlock Door to turn into Door
+(Unlocked). The party can try to pick or bash it, but it doesnt work.</li>
+<li>Type 128 - Wall w. Door (Impassable): Cant be opened (though a special encounter can
+change the terrain type). The party can try to pick it, bash it, or cast Unlock Doors, but
+it doesnt work.</li>
+<li>Type 129 - Wall w. Open Door: If party uses space, it closes the door.</li>
+<li>Type 130, 131 - Wall w. Portcullises: Open and closed. The closed portcullis cant be
+opened.</li>
+<li>Type 132 - Wall w. Sign</li>
+<li>Type 133-135 - Cracked Wall, Moldy Wall, Fragile Wall: Casting Move Mountains on these
+walls turns them to rubble.</li>
+<li>Type 136,137 - Wall w. Painting, Window: Scenery</li>
+<li>Type 139-153 - Basalt Walls: All of these terrains function like their regular Wall
+counterparts They just looks different.</li>
+<li>Type 154=169 - Adobe Walls: All of these terrains function like their regular Wall
+counterparts They just looks different.</li>
+<li>Type 170 - Floor</li>
+<li>Type 171 - Blocked Floor: Monsters wont walk onto this space.</li>
+<li>Type 172 - Shock Floor: Damages party when they walk on it.</li>
+<li>Type 173 - Floor w. Rune: Monsters wont walk onto this space.</li>
+<li>Type 174-207 - Floors with a variety of decorative terrain types. Some of them (like
+desk and bookshelf) are containers.</li>
+<li>Type 208,209 - Levers (Advanced): There are used in conjunction with the lever Town
+special node types.</li>
+<li>Type 210-216 - Nice floor with various terrains. Monsters wont walk on 211 (the second
+nice floor).</li>
+<li>Type 217-231 - Vahnatai floor types.</li>
+<li>Type 232-245 - Town entries. Notice the fifth town entry is just grass - this is a
+hidden town.</li>
+<li>Type 246-251 - Special encounter spots (Advanced): These are used in conjunction with
+One Shot special encounter nodes. If you put a One-Shot special on a space with this
+terrain type, after the special is triggered the white spot will disappear.</li>
+<li>Type 252-255 - Conveyor Belts: These are conveyor belts, which move the party in the 4
+different cardinal directions.</li>
+</ul>
+
+<h2>Combat Arenas</h2>
+
+<ol start='0'>
+<li>Grassy field - uses terrain types 2, 3, 4, 112, 114, 115, sometimes 83</li>
+<li>Ordinary cave - uses terrain types 0, 1, 93, 94, 95, 98, sometimes 82</li>
+<li>Mountain - uses terrain types 36, 37, sometimes 83</li>
+<li>Surface bridge - uses terrain types 50, 63, 64, 83</li>
+<li>Cave bridge - uses terrain types 71, 74, 82</li>
+<li>Rubble-strewn cave - uses terrain types 0, 84, 92, 95, 97, 98, sometimes 82</li>
+<li>Cave forest - uses terrain types 0, 91, 92, 93, 95, 98, sometimes 82</li>
+<li>Cave mushrooms - uses terrain types 0, 1, 92, 93, 94, 95, sometimes 82</li>
+<li>Cave swamp - uses terrain types 0, 1, 92, 95, 96, 112, sometimes 82</li>
+<li>Surface rocks - uses terrain types 2, 3, 87, 110, 113, 114, sometimes 83</li>
+<li>Surface swamp - uses terrain types 2, 3, 4, 111, sometimes 83</li>
+<li>Surface woods - uses terrain types 2, 3, 4, 112, 113, 114, sometimes 83</li>
+<li>Surface shrubbery - uses terrain types 2, 3, 4, 112, 114, 115, sometimes 83</li>
+<li>Stalagmites - uses terrain types 0, 1, 75, 76, 97, 98, sometimes 82</li>
+<li>Cave fumarole - uses terrain types 0, 1, 75, 76, 94, 98</li>
+<li>Surface fumarole - uses terrain types 36, 37, 75, 76</li>
+<li>Cave camp - uses terrain types 0, 1, 92, 93, 94, 95, 98, 104, 105</li>
+<li>Surface camp - uses terrain types 2, 3, 4, 104, 105, 112, 114, 115</li>
+<!-- Note: In the above, 104 and 105 will be replaced, as they are the bedding and campfire. -->
+<li>Cave crops - uses terrain types 0, 1, 84, 93, 97, 98,
+plus the terrain type the arena was triggered from</li>
+<li>Surface crops - uses terrain types 2, 3, 4, 87, 110,
+plus the terrain type the arena was triggered from</li>
+</ol>
+
+<p>In addition to the above, the walls (5-35) are used to make edges around the map and occasionally pillars in the middle.</p>
+
+</div>
+</body>
+</html>

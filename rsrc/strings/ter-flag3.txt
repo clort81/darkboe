@@ -1,0 +1,24 @@
+Unused
+Unused
+Damage type
+Unused
+Unused
+Status type
+Unused
+Unused
+Unused
+Can be bashed? (0 - can't, 1 - can)
+Unused
+Unused
+Small icon
+Unused
+Unused
+Unused
+Unused
+Max food lost
+Max food lost
+Unused
+Unused
+Unused
+Unused
+Small icon

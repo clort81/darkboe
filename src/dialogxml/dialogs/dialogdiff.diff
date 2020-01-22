@@ -1,0 +1,18 @@
+25,31d24
+< //#include "pcedit/pc.graphics.hpp" // Clort maybe needed for redraw_Screen
+< //#include "game/boe.graphics.hpp" // Clort maybe needed for redraw_Screen
+< 
+< #include <SFML/Graphics/RenderWindow.hpp> // Clort - don't know whether these includes are needed
+< #include <SFML/Graphics/RenderTarget.hpp> // Clort - don't know whether these includes are needed
+< #include <SFML/Window.hpp> // Clort - don't know whether these includes are needed
+< #include <SFML/Graphics.hpp> // Clort - don't know whether these includes are needed
+396d388
+< //redraw_screen(REFRESH_NONE); // Clort try to refresh screen
+415,416d406
+<         // Clort try to get position of current window
+<         sf::Vector2i parentPos = mainPtr.getPosition(); // Clort try to get current windowcoords
+424d413
+< //clort experiment
+426,427d414
+< win.setPosition(sf::Vector2i(parentPos.x+40,parentPos.y+30));//Clort
+< // this breaks mouse clicks but lowers cpu win.setFramerateLimit(6); // Clort

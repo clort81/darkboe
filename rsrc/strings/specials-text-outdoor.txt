@@ -1,0 +1,65 @@
+Make Outdoor Wandering
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Force Town Entry
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Town to enter
+Direction of entry
+Unused
+X coordinate to enter at (-1 default)
+Y coordinate to enter at (-1 default)
+Unused
+Special to Jump To
+--------------------
+Place Outdoor Encounter
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Number of special encounter (0 .. 3)
+Unused
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Outdoor Move Party
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space
+Y coordinate of space
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+

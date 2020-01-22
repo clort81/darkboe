@@ -1,0 +1,560 @@
+Town Attitude
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+First monster to affect (-1 for all)
+Last monster to affect (-1 for all)
+Unused
+New Attitude
+Unused
+Unused
+Special to Jump To
+--------------------
+Do Missile Animation
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Which missile animation?
+Unused
+X coordinate of start space
+Y coordinate of start space
+Path type
+X coordinate of end space
+Y coordinate of end space
+Sound to play
+Special to Jump To
+--------------------
+Animate Monster Attack
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of monster (or monster ID)
+Y coordinate of monster (or -1 to use X as ID)
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Animate Fake Damage
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+pic
+pictype
+X coordinate of space
+Y coordinate of space
+extra 1c
+Boom type
+Number to print (0 means print no number)
+Sound to play
+Special to Jump To
+--------------------
+Move Party
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space
+Y coordinate of space
+Unused
+0 - Just move, 1 - Teleport
+Unused
+Unused
+Special to Jump To
+--------------------
+Hit Space
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space
+Y coordinate of space
+Unused
+Damage to inflict (0 .. 1000)
+Type of damage (0..8)
+Unused
+Special to Jump To
+--------------------
+Explosion on Space
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Radius of explosion
+Unused
+X coordinate of space
+Y coordinate of space
+Unused
+Damage to inflict (0 .. 1000)
+Type of damage (0..8)
+Unused
+Special to Jump To
+--------------------
+Lock Space
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space
+Y coordinate of space
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Unlock Space
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space
+Y coordinate of space
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Do sfx Burst
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space
+Y coordinate of space
+Unused
+Type of explosion
+0 - normal, 1 - huge
+Sound to play (-1 = default)
+Special to Jump To
+--------------------
+Make Wandering Monster
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Place a Monster
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space to place
+Y coordinate of space to place
+Unused
+Number of creature to place
+1 - force placement
+Unused
+Special to Jump To
+--------------------
+Destroy Monster
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space
+Y coordinate of space
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Destroy All Monsters
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Type (or 0 - all, -1 - friendly, -2 - hostile)
+Unused
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Generic Lever
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+If Pulled, call this special ...
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Generic Portal
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+X coordinate to telep. to
+Y coordinate to telep. to
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Generic Button
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+If Pushed, call this special ...
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Generic Stairway
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+Unused
+X coordinate to go to
+Y coordinate to go to
+Unused
+Number of town to place party in
+What text? (0 - up, 1 - down)
+Trigger Limitations
+Special to Call in New Town
+--------------------
+Lever
+Unused
+Unused
+Number of first message in dialog
+Unused
+Unused
+Picture number
+Picture type
+Unused
+If Pulled, call this special ...
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Portal
+Unused
+Unused
+Number of first message in dialog
+Unused
+Unused
+Picture number
+Picture type
+X coordinate to telep. to
+Y coordinate to telep. to
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Stairway
+Unused
+Unused
+Number of first message in dialog
+Unused
+Unused
+Picture number
+Picture type
+X coordinate to place at
+Y coordinate to place at
+Unused
+Number of town to place party in
+If 1, always change level.
+Trigger Limitations
+Special to Call in New Town
+--------------------
+Relocate Outdoors
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of outdoor section
+Y coordinate of outdoor section
+Unused
+X coordinate inside section 
+Y coordinate inside section 
+Unused
+Special to Jump To
+--------------------
+Place Item
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate to place at
+Y coordinate to place at
+Unused
+Item to place
+Set to 1 to place in container, if present
+Unused
+Special to Jump To
+--------------------
+Split Party
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate to place lone PC at
+Y coordinate to place lone PC at
+Unused
+Sound to play (10 = teleport)
+Unused
+Unused
+Special to Jump To
+--------------------
+Reunite Party
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Sound to play (10 = teleport)
+Unused
+Unused
+If 1, don't change location
+Unused
+Unused
+Special to Jump To
+--------------------
+Start Town Timer
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Number of moves until event
+Call this special when time runs out ...
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Change Lighting
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+New town lighting type (0 .. 3)
+Unused
+Unused
+Party light level
+0 - increase, 1 - drain
+Unused
+Special to Jump To
+--------------------
+Set Monster Attitude
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Which monster
+New attitude
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Center View on Space
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X coordinate of space (if -1, center on party)
+Y coordinate of space
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Lift Fog
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+1 - lift fog, 0 - put back
+Unused
+Unused
+Unused
+Unused
+Unused
+Special to Jump To
+--------------------
+Start Targeting
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+Which spell pattern? (0 - single space)
+Max range? (ignored outside combat mode)
+Max targets? (>1 only in combat)
+Special Called if Targeting Fails
+if 1, allow obstructed spaces
+if 1, allow targeting in antimagic fields
+Special to Call for Each Target
+--------------------
+Place Fields in Spell Pattern
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X Coordinate of pattern center
+Y Coordinate of pattern center
+Which spell pattern? (-1 for targeted pattern)
+Which field type?
+Unused
+Unused
+Special to Jump To
+--------------------
+Deal Damage in Spell Pattern
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X Coordinate of pattern center
+Y Coordinate of pattern center
+Which spell pattern? (-1 for targeted pattern)
+Which damage type? (0..8)
+How many dice? (calculated in d6's)
+0 - sequential simple booms, 1 - simultaneous animated booms
+Special to Jump To
+--------------------
+Relocate Creature
+Unused
+Unused
+First part of message
+Second part of message
+Unused
+Unused
+Unused
+X destination or differential
+Y destination or differential
+Unused
+Which creature
+Positioning mode
+Delay
+Special to Jump To
+--------------------
+Place Label
+Unused
+Unused
+Label text
+Unused
+Unused
+Unused
+Unused
+X coordinate, or which creature
+Y coordinate, or -1 for creature
+Unused
+0 - Align top, 1 - align centre
+Delay
+Unused
+Special to Jump To
+--------------------

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="common.xsd"/>
+	<xs:complexType name="point">
+		<xs:attributeGroup ref="point"/>
+	</xs:complexType>
+	<xs:simpleType name="key">
+		<xs:union>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="a"/>
+					<xs:enumeration value="b"/>
+					<xs:enumeration value="c"/>
+					<xs:enumeration value="d"/>
+					<xs:enumeration value="e"/>
+					<xs:enumeration value="f"/>
+					<xs:enumeration value="g"/>
+					<xs:enumeration value="h"/>
+					<xs:enumeration value="i"/>
+					<xs:enumeration value="j"/>
+					<xs:enumeration value="k"/>
+					<xs:enumeration value="l"/>
+					<xs:enumeration value="m"/>
+					<xs:enumeration value="n"/>
+					<xs:enumeration value="o"/>
+					<xs:enumeration value="p"/>
+					<xs:enumeration value="q"/>
+					<xs:enumeration value="r"/>
+					<xs:enumeration value="s"/>
+					<xs:enumeration value="t"/>
+					<xs:enumeration value="u"/>
+					<xs:enumeration value="v"/>
+					<xs:enumeration value="w"/>
+					<xs:enumeration value="x"/>
+					<xs:enumeration value="y"/>
+					<xs:enumeration value="z"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:union>
+	</xs:simpleType>
+	<xs:simpleType name="blockage">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="none"/>
+			<xs:enumeration value="move"/>
+			<xs:enumeration value="monsters"/>
+			<xs:enumeration value="sight"/>
+			<xs:enumeration value="move-and-shoot"/>
+			<xs:enumeration value="move-and-sight"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="terTrim">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="none"/>
+			<xs:enumeration value="wall"/>
+			<xs:enumeration value="s"/>
+			<xs:enumeration value="n"/>
+			<xs:enumeration value="e"/>
+			<xs:enumeration value="w"/>
+			<xs:enumeration value="sw"/>
+			<xs:enumeration value="ne"/>
+			<xs:enumeration value="se"/>
+			<xs:enumeration value="nw"/>
+			<xs:enumeration value="sw-inner"/>
+			<xs:enumeration value="ne-inner"/>
+			<xs:enumeration value="se-inner"/>
+			<xs:enumeration value="nw-inner"/>
+			<xs:enumeration value="frills"/>
+			<xs:enumeration value="road"/>
+			<xs:enumeration value="walkway"/>
+			<xs:enumeration value="waterfall"/>
+			<xs:enumeration value="city"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="stepSound">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="step"/>
+			<xs:enumeration value="crunch"/>
+			<xs:enumeration value="squish"/>
+			<xs:enumeration value="splash"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="editorData">
+		<xs:all>
+			<xs:element name="shortcut" minOccurs="0" type="key"/>
+			<xs:element name="frill" minOccurs="0">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:integer">
+							<xs:attribute name="chance" type="xs:integer" use="optional" default="10"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="object" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="num" type="xs:integer"/>
+						<xs:element name="pos" type="point"/>
+						<xs:element name="size" type="point"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="terrain">
+		<xs:all>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="pic" type="xs:integer"/>
+			<xs:element name="map" type="xs:integer"/>
+			<xs:element name="blockage" type="blockage"/>
+			<xs:element name="special">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="type">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:pattern value="[a-z-]+"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="flag" minOccurs="0" maxOccurs="3" type="xs:string"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="transform" minOccurs="0" type="xs:integer"/>
+			<xs:element name="fly" minOccurs="0" type="bool"/>
+			<xs:element name="boat" minOccurs="0"  type="bool"/>
+			<xs:element name="ride" minOccurs="0" type="bool"/>
+			<xs:element name="archetype" minOccurs="0" type="bool"/>
+			<xs:element name="light" minOccurs="0" type="xs:integer"/>
+			<xs:element name="step-sound" minOccurs="0" type="stepSound"/>
+			<xs:element name="trim" type="terTrim"/>
+			<xs:element name="arena" type="xs:integer"/>
+			<xs:element name="ground" minOccurs="0" type="xs:integer"/>
+			<xs:element name="trim-for" minOccurs="0" type="xs:integer"/>
+			<xs:element name="editor" type="editorData" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="id" type="xs:integer" use="required"/>
+	</xs:complexType>
+	<xs:element name="terrains">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="terrain" type="terrain" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="boes" type="xs:string" use="required"/>
+		</xs:complexType>
+		<xs:unique name='terrainIds'>
+			<xs:selector xpath='terrain'/>
+			<xs:field xpath='@id'/>
+		</xs:unique>
+	</xs:element>
+</xs:schema>

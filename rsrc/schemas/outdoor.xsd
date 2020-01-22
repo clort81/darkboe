@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="common.xsd"/>
+	<xs:complexType name="encounter">
+		<xs:sequence>
+			<xs:element name="monster" minOccurs="1" maxOccurs="10">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:integer">
+							<xs:attribute name="friendly" type="bool" default="false"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="onmeet" type="xs:integer" minOccurs="0"/>
+			<xs:element name="onwin" type="xs:integer" minOccurs="0"/>
+			<xs:element name="onflee" type="xs:integer" minOccurs="0"/>
+			<xs:element name="sdf" minOccurs="0">
+				<xs:complexType>
+					<xs:attributeGroup ref="point"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="can-flee" type="bool" default="true"/>
+		<xs:attribute name="force" type="bool" default="false"/>
+	</xs:complexType>
+	<xs:element name="sector">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="name" type="xs:string"/>
+				<xs:element name="comment" type="xs:string" minOccurs="0"/>
+				<xs:element name="sound" minOccurs="0">
+					<xs:simpleType>
+						<xs:union memberTypes="xs:integer">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="birds"/>
+									<xs:enumeration value="drip"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:union>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="encounter" type="encounter" minOccurs="0" maxOccurs="4"/>
+				<xs:element name="wandering" type="encounter" minOccurs="0" maxOccurs="4"/>
+				<xs:element name="sign" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:simpleContent>
+							<xs:extension base="xs:string">
+								<xs:attribute name="id" type="xs:integer" use="required"/>
+							</xs:extension>
+						</xs:simpleContent>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="area" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:simpleContent>
+							<xs:extension base="xs:string">
+								<xs:attributeGroup ref="rect"/>
+							</xs:extension>
+						</xs:simpleContent>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="string" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:simpleContent>
+							<xs:extension base="xs:string">
+								<xs:attribute name="id" type="xs:integer" use="required"/>
+							</xs:extension>
+						</xs:simpleContent>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="boes" type="xs:string" use="required"/>
+		</xs:complexType>
+		<xs:unique name='stringIds'>
+			<xs:selector xpath='string'/>
+			<xs:field xpath='@id'/>
+		</xs:unique>
+		<xs:unique name='signIds'>
+			<xs:selector xpath='sign'/>
+			<xs:field xpath='@id'/>
+		</xs:unique>
+	</xs:element>
+</xs:schema>

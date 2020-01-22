@@ -1,0 +1,62 @@
+Makes the character harder to hit and take less damage from blows. It	also makes the PC hit more often, and his or her blows do more damage. Its effects decay with time.
+Increases the health of the selected PC a small amount, up to the PC's	maximum health.
+Reduces the amount of poison running around in the veins of the	selected PC.
+When cast on an undead creature, it usually does a reasonable	amount of damage to it. It has no effect on non-undead.
+Displays the party's x-y location in the town.
+The target of this spell becomes magically shielded. For a time, monsters probably won't be able to attack him/her. The effects disappear when the PC attacks someone.
+This spell has the caster absorb the damage taken by another character. The higher the level, the less damage the caster takes per health point healed.
+Casting this spell gives the party a little more food.
+When cast on a location filled with evil magic, the location receives a blessing. This might drive out the evil magic. Then again, it might not.
+The victim of this spell moves more slowly and has less effective attacks for a short time.
+Like Minor Bless, but better. Its effect increases with the level of the caster.
+Like Weaken Poison, but better. Its effect increases with the level of the caster.
+The opposite of bless. It makes everything much worse for the victim, for a time. Hitting someone with this spell several times vastly increases the effect.
+Creates a short duration magical light source.
+Deals a painful blow to the targeted victim. The damage increases	with your level.
+This spell summons a shade from the netherworld to aid you. It will disappear after a short time.
+When cast on a fragile wall or outcropping of rock, the wall or outcropping crumbles into rubble. It doesn't work on all walls.
+This spell has a chance of making the target monster start to fight for the party. The chance of it working drops sharply with the level of the monster.
+The victim of this spell is afflicted by a disease, which slowly weakens it. The disease lasts a long time.
+Casting this on a sleeping character instantly wakes that character up.
+A much better version of Minor Heal.
+Casts one minor heal on each PC.
+This spell gives the victim a powerful curse, the effect of which increases with the level of the caster.
+This spell causes all other living things to appear on your map for a short time. Note, however, that this spell only detects creatures in areas you have explored.
+This spell instantly removes the effects of paralysis.
+This spell magically creates a lot of food for the party.
+This spell fills an area with walls of force, which are fairly damaging and reasonably long lasting.
+Casting this spell on a PC cures all his/her disease.
+This spell completely unfeebleminds the recipient.
+This spell fires a number of bolts of divinely inspired cold, the number of which increases with the level of the caster. To cast without using all of the targets, hit the space bar.
+Causes everyone to become less poisoned. Useful for dealing with those nasty swamps.
+Causes all monsters within ten spaces to receive a powerful curse.
+Deals a deadly blow to the targeted undead nasty. The chance of the spell having	an effect increases with the caster's level.
+Occasionally, you will put on an item which then refuses to be taken off. Casting this spell has a chance of removing the curse.
+This spell summons a bunch of snakes to aid the party. Skillful casters have a chance of getting asps instead of the weaker giant snakes.
+When something strikes the recipient of this spell in hand-to-hand combat, it takes as much damage as the victim. The duration of this spell increases with the level of the caster.
+This spell purifies the recipient. The beneficiary is completely unwebbed, and all disease is cured.
+When cast, for a short time everyone in the party can walk across lava with no damage. The duration increases slowly with the level of the caster.
+Much like Bless, but affects everyone.
+Works like the Heal spell, but gives much more bang for the spell points.
+This spell returns a body to life. You need Resurrection Balm to cast this. There is a small chance (decreasing with level) that it turns the body to dust. A dusted character can only be raised with a Resurrect spell. Raising a PC reduces his/her stats.
+The first 'area of affect' offensive priest spell. It chars all beings adjacent	to the space you target. The damage done increases with level.
+This spell hides all PCs (like a sanctuary spell). As before, the effect for a PC is voided when that PC attacks.
+This powerful spell summons four spirits, and a magical being to lead them. They then fight on the side of the caster for a little while.
+This spell strikes every space adjacent to the party with a Move Mountains spell.
+All magical walls, etc. in the large area affected by this spell will be dispelled. It has a small chance of affecting quickfire.
+Like the Heal spell, but affects the whole party. Very efficient.
+This spell heals all damage and cures all poison for one PC.
+This powerful spell instantly wakes up any sleeping characters in the party. What's more, it provides total resistance to magical sleep for a short time. Finally, it speeds back up any slowed character.
+Certain rare monsters can turn one of your characters to stone. This valuable spell undoes the damage.
+This spell summons a powerful, invisible being to fight on the side of the party. Be careful not to damage it by mistake!
+When cast, all creatures within eight spaces of the caster have a chance of coming under his/her control.
+A very unusual and effective spell for a party on the defensive. The caster is surrounded by several layers of magical fields, which fend off anyone attacking.
+This spell afflicts everyone within eight spaces with an effective but slow-acting disease.
+When cast, the party receives a powerful healing (increasing with level of	the caster) and has poison cured as well.
+Demons are resistant to most magic. This spell gives them a blow which usually does a lot of damage.	The chance of success increases with the level of the caster.
+Like raise dead, but much more effective, and works on even a dusted	character. It also has a smaller chance of lowering the character's stats. It still requires Resurrection Balm to cast.
+The most powerful offensive priest spell. It delivers a stunning blow of force to all beings within two spaces of the targeted space.
+This spell temporarily makes the caster an invulnerable, incredibly powerful avatar of the gods.
+This spell creates a wall of the most damaging (and long lasting) of the magic walls. Rotate the wall by hitting space.
+This spell returns the party to the town where they began the scenario. Because of the danger of teleporting from narrow, windy tunnels, it can only be cast outdoors.
+This spell removes all webs and disease from the party.

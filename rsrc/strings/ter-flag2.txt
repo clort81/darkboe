@@ -1,0 +1,24 @@
+Unused
+Number of sound (99 - no sound)
+Number of Dice
+Unused
+Unused
+Percentage chance
+Unused
+Method
+Unused
+Difficulty (0-4 L, 5-9 M, 10 I)
+Unused
+Unused
+Type of special (0 - global, 1 - local)
+Unused
+Unused
+Unused
+Unused
+Percentage of food lost
+Percentage of food lost
+Unused
+Unused
+Unused
+Number of sound (99 - no sound)
+Type of special (0 - global, 1 - local)

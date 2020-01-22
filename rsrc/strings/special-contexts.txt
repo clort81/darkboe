@@ -1,0 +1,25 @@
+Moving (Outdoors)
+Moving (Town)
+Moving (Combat)
+Looking (Outdoors)
+Looking (Town/Combat)
+Entering town
+Leaving town
+In conversation
+Using special item
+Town event timer triggered
+Scenario event timer triggered
+Special node timer triggered
+Killed a monster
+Entered outdoor combat
+Fled outdoor encounter
+Won outdoor encounter
+Targeting spell
+Using space
+Seeing a monster for the first time
+Monster using special ability
+Attacking at melee
+Being attacked at melee
+Attacking at range
+Being attacked at range
+Initiating conversation

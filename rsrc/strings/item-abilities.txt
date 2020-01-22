@@ -1,0 +1,169 @@
+Bonus damage of type
+Bonus damage against race
+Heal target
+Explodes
+Returning missile
+Farflight missile
+Seeking missile
+Drain magic from target
+Afflict status on target
+Drain life from target
+Unused
+Weak weapon
+Cause fear
+Call special when attacking
+Does less damage as health lost
+Does more damage as health lost
+Does less damage as SP lost
+Does more damage as SP lost
+
+
+
+
+
+
+
+
+
+
+
+Protection from damage type
+Full protection
+Magery
+Evasion
+Martyr's shield
+Awkward weapon
+Protection from status effect
+Boost attack skill
+Boost statistic
+Boost combat statistics
+Boost magic statistics
+Boost missile accuracy
+Boost thieving skills
+Giant strength
+Lighter object
+Heavier object
+Occasional status effect
+Call special when attacked
+Life saving
+Protect from petrification
+Regenerate
+Augment weapon poison
+Radiance
+Boost willpower
+Free action
+Boost speed
+Slow wearer
+Protect from race
+Lockpicks
+Drain missiles
+Call special when dropped
+
+
+
+
+
+
+
+
+
+Weapon poison
+Affect status effect
+Cast spell
+Bliss/Doom
+Affect experience
+Affect skill points
+Affect health
+Affect spell points
+Affect light level
+Affect party status
+Affect health and poison
+Call special when used
+Summoning
+Mass summoning
+Quickfire
+Readable item
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Holly/Toadstool
+Comfrey Root
+Glowing Nettle
+Crypt Shroom/Wormgrass
+Asptongue Mold
+Ember Flowers
+Graymold
+Mandrake
+Sapphire
+Smoky Crystal
+Resurrection Balm
+
+
+
+
+
+
+
+
+
