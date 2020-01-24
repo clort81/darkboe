@@ -15,7 +15,7 @@
 namespace ResMgr {
 	template<> const std::string resLoader<ImageRsrc>::file_ext = "png";
 	template<> const std::string resLoader<CursorRsrc>::file_ext = "gif";
-	template<> const std::string resLoader<FontRsrc>::file_ext = "ttf";
+	template<> const std::string resLoader<FontRsrc>::file_ext = "bdf"; // Clort
 	template<> const std::string resLoader<StringRsrc>::file_ext = "txt";
 	template<> const std::string resLoader<SoundRsrc>::file_ext = "wav";
 }

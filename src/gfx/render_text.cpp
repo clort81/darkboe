@@ -16,20 +16,20 @@ void TextStyle::applyTo(sf::Text& text) {
 	switch(font) {
 		case FONT_PLAIN:
 			//text.setFont(*ResMgr::get<FontRsrc>("plain"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortSans-11.bdf")); //Clort load bdf font instead of 'plain'
+			text.setFont(*ResMgr::get<FontRsrc>("ClortSans-11")); //Clort load bdf font instead of 'plain'
 			break;
 		case FONT_BOLD:
 			//text.setFont(*ResMgr::get<FontRsrc>("bold"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortSansBold-11.bdf")); //Clort load bdf font instead of 'bold'
+			text.setFont(*ResMgr::get<FontRsrc>("ClortSansBold-11")); //Clort load bdf font instead of 'bold'
 
 			break;
 		case FONT_DUNGEON:
 			//text.setFont(*ResMgr::get<FontRsrc>("dungeon"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortDamsel-20.bdf"));
+			text.setFont(*ResMgr::get<FontRsrc>("ClortDamsel-20"));
 			break;
 		case FONT_MAIDWORD:
 			//text.setFont(*ResMgr::get<FontRsrc>("maidenword"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortDamsel-20.bdf")); //Clort load bdf font instead of 'maidenword'
+			text.setFont(*ResMgr::get<FontRsrc>("ClortDamsel-20")); //Clort load bdf font instead of 'maidenword'
 			break;
 	}
 	text.setCharacterSize(pointSize);
