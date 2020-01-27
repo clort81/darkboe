@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 		// exactly framerate capping.
 		//     ~xq
 		sf::Clock framerate_clock;
-		const sf::Int64 desired_microseconds_per_frame { 1000000 / 15}; // us / FPS
+		const sf::Int64 desired_microseconds_per_frame { 1000000 / 30}; // us / FPS
 		while(!All_Done) {
 			// If this call indicates that it did something expensive by 
 			// returning true, we do the performance capping. The logic 
