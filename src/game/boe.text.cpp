@@ -88,9 +88,9 @@ void put_pc_screen() {
 	rectangle food_rect[2] = {{102,37,113,80}, {102,3,113,40}}; // Clort food right
 	rectangle gold_rect[2] = {{102,106,113,147}, {102,75,113,104}}; // Clort moved
 	rectangle day_rect[2] = {{102,174,113,201}, {102,147,113,172}}; // Clort moved
-	rectangle title_rects[3] = {	{3,3,16,181},  	// Clort Party Stats gets shifted 0.5 by SFML scaling
-					{3,183,16,214},	// Clort HP
-					{3,212,16,237}};// Clort SP
+	rectangle title_rects[3] = {	{3,3,16,181},  	// Party Title 
+					{3,183,16,214},	// Clort title HP
+					{3,212,16,237}};// Clort title SP
 	//rectangle bottom_bar_rect = {99,0,116,271}; // Clort not even used?
 	rectangle info_from = {0,1,12,13}, switch_from = {0, 13, 12, 25};
 	
@@ -135,15 +135,21 @@ void put_pc_screen() {
                                 style.colour = CL_LTGREY; // Clort normal character colors
                         }
 			
+			to_draw_rect = pc_buttons[i][PCBTN_NAME]; // Clort - to shift
+			to_draw_rect.top -= 4; // Clort - to shift PC name vs pc stats 
+
 			std::ostringstream sout;
+			sout.str("");
 			sout << i + 1 << ". " << univ.party[i].name;
-			win_draw_string(pc_stats_gworld,pc_buttons[i][PCBTN_NAME],sout.str(),eTextMode::WRAP,style);
+			win_draw_string(pc_stats_gworld,to_draw_rect,sout.str(),eTextMode::WRAP,style);
 			// Clort style.italic = false;
 			style.italic = false;
 			// Clort style.colour = sf::Color::Black;
 			
-			to_draw_rect = pc_buttons[i][PCBTN_HP];
-			to_draw_rect.right += 20;
+			// Does nothing 
+			//to_draw_rect = pc_buttons[i][PCBTN_HP];
+			//to_draw_rect.right += 20;
+			//to_draw_rect.top += 2; // Clort shift partystats down
 			sout.str("");
 			switch(univ.party[i].main_status) {
 				case eMainStatus::ALIVE:
@@ -218,10 +224,11 @@ void put_item_screen(eItemWinMode screen_num) {
 	long item_offset;
 	short pc;
 	rectangle erase_rect = {17,2,122,255},dest_rect;
-	rectangle upper_frame_rect = {3,3,15,268};
-        rectangle upper_frame_recttxt = {4,3,15,268}; 	// Character Inven title text
+	//rectangle upper_frame_rect = {3,3,15,268};
+	rectangle upper_frame_rect = {3,3,15,268};  // This jusst moves inven titletext?
+        rectangle upper_frame_recttxt = {3,3,15,268}; 	// Character Inven title text
 						     	// Clort This should be x=4 but
- 							// SFML renders it wrong so 3
+ 							// SFML renders it wrong so ?
 	
 	item_stats_gworld.setActive();
 	
@@ -244,7 +251,7 @@ void put_item_screen(eItemWinMode screen_num) {
 	switch(screen_num) {
 		case ITEM_WIN_SPECIAL:
 			win_draw_string(item_stats_gworld,upper_frame_rect,"Special items:",eTextMode::WRAP,style);
-	// WHAT THE		style.colour = CL_TEMP; // Clort dunno - hopefully firstinven
+			style.colour = CL_LTGREY; // Clort special item color
 			for(short i = 0; i < 8; i++) {
 				i_num = i + item_offset;
 				if(i_num < spec_item_array.size()) {
@@ -286,19 +293,21 @@ void put_item_screen(eItemWinMode screen_num) {
 			pc = screen_num;
 			sout.str("");;
 			sout << univ.party[pc].name << " inventory:",
-                        win_draw_string(item_stats_gworld,upper_frame_recttxt,sout.str(),eTextMode::WRAP,style); // Clort text needs adjustment a bit lower
+                        win_draw_string(item_stats_gworld,upper_frame_recttxt,sout.str(),eTextMode::WRAP,style); 
                         style.colour = CL_LTBLUE; // Clort First inventory Slot
 			
 			for(short i = 0; i < 8; i++) {
 				i_num = i + item_offset;
 				sout.str("");
 				sout << i_num + 1 << '.';
-				win_draw_string(item_stats_gworld,item_buttons[i][ITEMBTN_NAME],sout.str(),eTextMode::WRAP,style);
 				
  				dest_rect = item_buttons[i][ITEMBTN_NAME];
-				dest_rect.left += 36;
-				dest_rect.top -= 2;
+				dest_rect.left += 1; 	// Position inven numbers 
+				dest_rect.top -= 2;  	// Position inven numbers 
+				win_draw_string(item_stats_gworld,dest_rect,sout.str(),eTextMode::WRAP,style); // Draw the inventory item numbers - this moved past the dest_rect shift.
 				
+				dest_rect.left += 35; 	// Position inven description 
+				//dest_rect.top -= 0;   	// Position inven description
 				const cPlayer& who = univ.party[pc];
 				const cItem& item = who.items[i_num];
 				
@@ -434,19 +443,14 @@ void place_buy_button(short position,short pc_num,short item_num) {
 	}
 }
 
-// name, use, give, drop, info, sell/id
-// shortcuts - if which_button_to_put is 10, all 4 buttons now
-//				if which_button_to_put is 11, just right 2
 void place_item_graphic(short which_slot,short graphic) {
 	rectangle from_rect = {0,0,18,18},to_rect;
 	
-	item_area_button_active[which_slot][ITEMBTN_NAME] = true;
+	item_area_button_active[which_slot][ITEMBTN_NAME] = item_area_button_active[which_slot][ITEMBTN_ICON] = true;
+
 	from_rect.offset((graphic % 10) * 18,(graphic / 10) * 18);
-	to_rect = item_buttons[which_slot][ITEMBTN_NAME];
-	to_rect.right = to_rect.left + (to_rect.bottom - to_rect.top);
-	to_rect.inset(-1,-1);
-	to_rect.offset(20,1);
-	from_rect.inset(2,2);
+	to_rect = item_buttons[which_slot][ITEMBTN_ICON];
+	std::shared_ptr<const sf::Texture> src_gw;
 	if(graphic >= 10000) {
 		sf::Texture* src_gw;
 		graf_pos_ref(src_gw, from_rect) = spec_scen_g.find_graphic(graphic - 10000, true);
@@ -459,6 +463,9 @@ void place_item_graphic(short which_slot,short graphic) {
 	else rect_draw_some_item(*ResMgr::get<ImageRsrc>("tinyobj"), from_rect, item_stats_gworld, to_rect, sf::BlendAlpha);
 }
 
+// name, use, give, drop, info, sell/id
+// shortcuts - if which_button_to_put is 10, all 4 buttons now
+//				if which_button_to_put is 11, just right 2
 void place_item_button(short button_position,short which_slot,eItemButton button_type) {
 	rectangle from_rect = {0,0,18,18},to_rect;
 	
@@ -466,7 +473,7 @@ void place_item_button(short button_position,short which_slot,eItemButton button
 	switch(button_position) {
 	default: // this means put a regular item button
 		item_area_button_active[which_slot][button_type] = true;
-		rect_draw_some_item(invenbtn_gworld, item_buttons_from[button_type - 1], item_stats_gworld, item_buttons[which_slot][button_type], sf::BlendAlpha);
+		rect_draw_some_item(invenbtn_gworld, item_buttons_from[button_type - 2], item_stats_gworld, item_buttons[which_slot][button_type], sf::BlendAlpha);
 		break;
 	case ITEMBTN_ALL: // this means put all 4
 		item_area_button_active[which_slot][ITEMBTN_USE] = true;
@@ -507,7 +514,7 @@ void place_item_bottom_buttons() {
 		if(univ.party[i].main_status == eMainStatus::ALIVE) {
 		 	item_bottom_button_active[i] = true;
 		 	to_rect = item_screen_button_rects[i];
-			rect_draw_some_item(invenbtn_gworld, but_from_rect, item_stats_gworld, to_rect, sf::BlendAlpha);
+			rect_draw_some_item(invenbtn_gworld, but_from_rect, item_stats_gworld, to_rect, sf::BlendAlpha); // Draw the buttons behind small PC graphic
 			pic_num_t pic = univ.party[i].which_graphic;
 			sf::Texture* from_gw;
 			if(pic >= 1000) {
@@ -526,14 +533,16 @@ void place_item_bottom_buttons() {
 				pc_from_rect = calc_rect(2 * (pic / 8), pic % 8);
 				from_gw = ResMgr::get<ImageRsrc>("pcs").get();
 			}
-			to_rect.inset(2,2);
-			rect_draw_some_item(*from_gw, pc_from_rect, item_stats_gworld, to_rect, sf::BlendAlpha);
+			to_rect.inset(2,2); // Clort this affects PC width
+			rect_draw_some_item(*from_gw, pc_from_rect, item_stats_gworld, to_rect, sf::BlendAlpha); // Draw the little PCs
 			std::string numeral = std::to_string(i + 1);
 			short width = string_length(numeral, style);
+			// Clort these Y-offsets are not needed for bitmapped font
 			// Offset "6" down two pixels to make it line up, because it has an ascender in this font
 			// Offset "1" - "4" down as well because they're not shorter and it looks a bit better
-			to_rect.offset(-width - 5, i != 4 ? 2 : 0);
-			win_draw_string(item_stats_gworld, to_rect, numeral, eTextMode::LEFT_TOP, style);
+			//to_rect.offset(-width - 5, i != 4 ? 2 : 0);
+			to_rect.left -= (i==0 ? 10 : 12);
+			win_draw_string(item_stats_gworld, to_rect, numeral, eTextMode::LEFT_TOP, style); // Clort draw the numbers left of PC buttons
 		}
 		else item_bottom_button_active[i] = false;
 	}

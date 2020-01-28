@@ -39,10 +39,11 @@
 
 rectangle bottom_buttons[14];
 rectangle item_screen_button_rects[9] = {
-	{125,10,141,28},{125,40,141,58},{125,68,141,86},{125,98,141,116},{125,126,141,144},{125,156,141,174},
-	{126,176,141,211},
-	{126,213,141,248},
-	{127,251,140,267}
+	// Clort squish em a bit {125,10,141,28},{125,40,141,58},{125,68,141,86},{125,98,141,116},{125,126,141,144},{125,156,141,174},
+	{125,11,141,29},{125,40,141,58},{125,69,141,87},{125,97,141,115},{125,126,141,144},{125,155,141,173}, // Clort tweaked PC icon positions - SFML fails to place properly
+	{126,176,141,211}, // Special button position
+	{126,213,141,248}, // Jobs button position
+	{127,251,140,267} // "?" button position
 };
 
 rectangle border_rect[4] = {
@@ -160,8 +161,12 @@ void init_screen_locs() {
 	startup_top.left = startup_base.left;
 	startup_top.right = startup_button[STARTBTN_JOIN].right;
 	
-	// name, use, give, drip, info, sell/id   each one 13 down
-	item_buttons[0][ITEMBTN_NAME].top = 17;
+	// icon, name, use, give, drip, info, sell/id   each one 13 down
+	item_buttons[0][ITEMBTN_ICON].top = 16; // Clort was 15
+	item_buttons[0][ITEMBTN_ICON].bottom = item_buttons[0][ITEMBTN_ICON].top + 18;
+	item_buttons[0][ITEMBTN_ICON].left = 17; // Clort was 20
+	item_buttons[0][ITEMBTN_ICON].right = item_buttons[0][ITEMBTN_ICON].left + 18;
+	item_buttons[0][ITEMBTN_NAME].top = 18; // Clort was 17
 	item_buttons[0][ITEMBTN_NAME].bottom = item_buttons[0][ITEMBTN_NAME].top + 12;
 	item_buttons[0][ITEMBTN_NAME].left = 3;
 	item_buttons[0][ITEMBTN_NAME].right = item_buttons[0][ITEMBTN_NAME].left + 185;
@@ -184,7 +189,7 @@ void init_screen_locs() {
 	for(short i = 1; i < 8; i++)
 		for(auto j : item_buttons[i].keys()) {
 			item_buttons[i][j] = item_buttons[0][j];
-			item_buttons[i][j].offset(0,13 * i);
+			item_buttons[i][j].offset(0,13 * i); 
 		}
 	
 /*	for(short i = 0; i < 8; i++) {
@@ -201,9 +206,9 @@ void init_screen_locs() {
 	item_screen_button_rects[8].right = 267; */
 	
 	// name, hp, sp, info, trade
-	pc_buttons[0][PCBTN_NAME].top = 18;
+	pc_buttons[0][PCBTN_NAME].top = 19; // Clort was 18 - shift partynames up
 	pc_buttons[0][PCBTN_NAME].bottom = pc_buttons[0][PCBTN_NAME].top + 12;
-	pc_buttons[0][PCBTN_NAME].left = 3;
+	pc_buttons[0][PCBTN_NAME].left = 3; // Clort was 3 - shift partynames right
 	pc_buttons[0][PCBTN_NAME].right = pc_buttons[0][PCBTN_NAME].left + 177;
 	pc_buttons[0][PCBTN_HP] = pc_buttons[0][PCBTN_NAME];
 	pc_buttons[0][PCBTN_HP].left = 184;
@@ -1335,7 +1340,7 @@ bool handle_action(sf::Event event) {
 						
 						item_hit = item_sbar->getPosition() + i;
 						switch(j) {
-							case ITEMBTN_NAME: // equip
+							case ITEMBTN_NAME: case ITEMBTN_ICON: // equip
 								handle_equip_item(item_hit, need_redraw);
 								break;
 							case ITEMBTN_USE:
