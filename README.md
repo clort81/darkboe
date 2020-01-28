@@ -14,6 +14,7 @@ It should build cleanly on linux, possibly windows and mac as well.
 Changes to functional code are minor to non-existent. I hope someday a Dark BoE option
 can be added to the main oBoE/cBoE tree. 
 
+![Comparison](screenshots/clort-oboe_vs_dboe.png "oBoE vs DarkBoE")
 ![In Town](screenshots/darkboecap1.png "In town")
 ![Overland](screenshots/darkboecap2.png "Overland")
 ![Visible Goblins](screenshots/darkboecap3.png "Visible Goblins")
