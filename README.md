@@ -14,6 +14,6 @@ It should build cleanly on linux, possibly windows and mac as well.
 Changes to functional code are minor, just performance and graphics enhancements.  Not all upstream commits are applied.  If someday this work can be merged into the main oBoE/cBoE tree, that would be great. 
 
 ![Comparison](screenshots/clort-oboe_vs_dboe.png "oBoE vs DarkBoE")
-![In Town](screenshots/darkboecap1.png "In town")
-![Overland](screenshots/darkboecap2.png "Overland")
-![Visible Goblins](screenshots/darkboecap3.png "Visible Goblins")
+![In Town](screenshots/darkboecap1b.png "In town")
+![Overland](screenshots/darkboecap2b.png "Overland")
+![Visible Goblins](screenshots/darkboecap3b.png "Visible Goblins")
