@@ -11,8 +11,7 @@ The work is in progress and is being hosted on GitHub to help prevent data loss.
 
 It should build cleanly on linux, possibly windows and mac as well.
 
-Changes to functional code are minor to non-existent. I hope someday a Dark BoE option
-can be added to the main oBoE/cBoE tree. 
+Changes to functional code are minor, just performance and graphics enhancements.  Not all upstream commits are applied.  If someday this work can be merged into the main oBoE/cBoE tree, that would be great. 
 
 ![Comparison](screenshots/clort-oboe_vs_dboe.png "oBoE vs DarkBoE")
 ![In Town](screenshots/darkboecap1.png "In town")
