@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstdio>
 #include <sstream>
+#include <iostream>
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
@@ -18,7 +19,27 @@
 #include "mathutil.hpp"
 #include "prefs.hpp"
 
-std::shared_ptr<sf::Sound> chan[4];
+struct SoundChannel {
+	std::shared_ptr<sf::Sound> player;
+	std::shared_ptr<const sf::SoundBuffer> sound;
+	void play(const std::shared_ptr<const sf::SoundBuffer> what) {
+		sound = what;
+		player->setBuffer(*what);
+		player->play();
+	}
+	bool isPlaying() const {
+		return player->getStatus() == sf::Sound::Playing;
+	}
+	void reset() {
+		player.reset();
+		sound.reset();
+	}
+	void init() {
+		player.reset(new sf::Sound);
+	}
+};
+
+SoundChannel chan[4];
 const int numchannel = 4;
 int channel;
 short snd_played[4];
@@ -41,11 +62,11 @@ short store_last_sound_played;
 bool sound_going(snd_num_t which_s) {
 	for(short i = 0; i < 4; i++)
 		if(snd_played[i] == which_s)
-			return chan[i]->getStatus() == sf::Sound::Playing;
+			return chan[i].isPlaying();
 	return false;
 }
 
-static std::string sound_to_fname_map(snd_num_t snd_num) {
+std::string sound_to_fname(snd_num_t snd_num) {
 	std::ostringstream sout;
 	sout << "SND" << snd_num;
 	return sout.str();
@@ -53,29 +74,25 @@ static std::string sound_to_fname_map(snd_num_t snd_num) {
 
 static void exit_snd_tool() {
 	for(auto& ch : chan) ch.reset();
+	ResMgr::sounds.drain();
 }
 
 void init_snd_tool(){
-	for(auto& ch : chan) ch.reset(new sf::Sound);
-	ResMgr::setIdMapFn<SoundRsrc>(sound_to_fname_map);
+	for(auto& ch : chan) ch.init();
 	atexit(exit_snd_tool);
 }
 
 void play_sound(snd_num_t which, sf::Time delay) { // if < 0, play asynch
-	static bool inited = false;
-	if(!inited) {
-		inited = true;
-		ResMgr::setIdMapFn<SoundRsrc>(sound_to_fname_map);
-	}
-	
-	std::shared_ptr<sf::SoundBuffer> sndhandle;
+	std::shared_ptr<const sf::SoundBuffer> sndhandle;
 	if(!get_bool_pref("PlaySounds", true)) {
 		if(which >= 0)
 			sf::sleep(delay);
 		return;
 	}
 	
-	if(abs(which) >= 100 && !ResMgr::have<SoundRsrc>(abs(which))) {
+	std::string sndname = sound_to_fname(abs(which));
+	
+	if(abs(which) >= 100 && !ResMgr::sounds.have(sndname)) {
 		std::cerr << "Error: Sound #" << abs(which) << " does not exist." << std::endl;
 		return;
 	}
@@ -85,18 +102,17 @@ void play_sound(snd_num_t which, sf::Time delay) { // if < 0, play asynch
 	if(channel >= numchannel) channel = 0;
 	
 	if(!sound_going(abs(which)))
-		sndhandle = ResMgr::get<SoundRsrc>(abs(which));
+		sndhandle = &ResMgr::sounds.get(sndname);
 	
 	if(which > 0)
  		if(always_async.find(which) != always_async.end())
 			which *= -1;
 	
  	if(sndhandle) {
-		chan[channel]->setBuffer(*sndhandle);
-		chan[channel]->play();
+		chan[channel].play(sndhandle);
 		
 		if(which > 0) {
-			while(chan[channel]->getStatus() == sf::Sound::Playing);
+			while(chan[channel].isPlaying());
 		}
 		snd_played[channel] = abs(which);
 	}

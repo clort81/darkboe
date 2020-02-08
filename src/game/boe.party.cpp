@@ -15,6 +15,7 @@
 #include "boe.specials.hpp"
 #include "boe.infodlg.hpp"
 #include "boe.items.hpp"
+#include "boe.actions.hpp"
 #include <cstring>
 #include <queue>
 #include "boe.party.hpp"
@@ -38,6 +39,7 @@
 #include "button.hpp"
 #include "spell.hpp"
 #include "cursors.hpp"
+#include "render_shapes.hpp" // for colour constants
 
 extern short skill_bonus[21];
 
@@ -51,7 +53,8 @@ short combat_percent[20] = {
 short who_cast,which_pc_displayed;
 eSpell town_spell;
 extern bool spell_freebie;
-extern short spec_target_type, spec_target_fail, spec_target_options;
+extern eSpecCtxType spec_target_type;
+extern short spec_target_fail, spec_target_options;
 bool spell_button_active[90];
 
 extern short fast_bang;
@@ -198,8 +201,7 @@ void put_party_in_scen(std::string scen_name) {
 			custom_choice_dialog(univ.scenario.intro_strs, univ.scenario.intro_mess_pic, PIC_SCEN, buttons);
 			j = 6;
 		}
-	short i,j,k;
-	run_special(eSpecCtx::STARTUP, 0, univ.scenario.init_spec, loc(0,0), &i, &j, &k);
+	run_special(eSpecCtx::STARTUP, eSpecCtxType::SCEN, univ.scenario.init_spec, loc(0,0));
 	give_help(1,2);
 	
 	// Compatibility flags
@@ -484,11 +486,10 @@ bool repeat_cast_ok(eSkill type) {
 	eSpellSelect store_select;
 	eSpell what_spell;
 	
-	if(overall_mode == MODE_COMBAT)
+	if(!prime_time()) return false;
+	else if(overall_mode == MODE_COMBAT)
 		who_would_cast = univ.cur_pc;
-	else if(overall_mode < MODE_TALK_TOWN)
-		who_would_cast = pc_casting;
-	else return false;
+	else who_would_cast = pc_casting;
 	
 	if(is_combat())
 		what_spell = univ.party[who_would_cast].last_cast[type];
@@ -558,12 +559,12 @@ void do_mage_spell(short pc_num,eSpell spell_num,bool freebie) {
 	short target,r1,adj,store;
 	location where;
 	
-	if(univ.party[pc_num].traits[eTrait::PACIFIST] && !(*spell_num).peaceful) {
-		add_string_to_buf("Cast: You're a pacifist!");
-		return;
-	}
 	if(univ.party[pc_num].traits[eTrait::ANAMA]) {
 		add_string_to_buf("Cast: You're an Anama!");
+		return;
+	}
+	if(univ.party[pc_num].traits[eTrait::PACIFIST] && !(*spell_num).peaceful) {
+		add_string_to_buf("Cast: You're a pacifist!");
 		return;
 	}
 	
@@ -899,7 +900,7 @@ void do_priest_spell(short pc_num,eSpell spell_num,bool freebie) {
 			break;
 			
 		case eSpell::WORD_RECALL:
-			if(overall_mode > MODE_OUTDOORS) {
+			if(!is_out()) {
 				add_string_to_buf("  Can only cast outdoors.");
 				return;
 			}
@@ -1182,7 +1183,8 @@ void do_priest_spell(short pc_num,eSpell spell_num,bool freebie) {
 
 extern short spell_caster;
 void cast_town_spell(location where) {
-	short adjust,r1,store;
+	short r1,store;
+	bool need_redraw = false;
 	location loc;
 	ter_num_t ter;
 	
@@ -1192,11 +1194,11 @@ void cast_town_spell(location where) {
 		(where.y >= univ.town->in_town_rect.bottom)) {
 		add_string_to_buf("  Can't target outside town.");
 		if(town_spell == eSpell::NONE)
-			run_special(eSpecCtx::TARGET, spec_target_type, spec_target_fail, where, &r1, &store, &adjust);
+			run_special(eSpecCtx::TARGET, spec_target_type, spec_target_fail, where);
 		return;
 	}
 	
-	adjust = can_see_light(univ.party.town_loc,where,sight_obscurity);
+	short adjust = can_see_light(univ.party.town_loc,where,sight_obscurity);
 	if(!spell_freebie)
 		univ.party[who_cast].cur_sp -= (*town_spell).cost;
 	ter = univ.town->terrain(where.x,where.y);
@@ -1226,9 +1228,8 @@ void cast_town_spell(location where) {
 		add_string_to_buf("  Can't see target.");
 	else switch(town_spell) {
 		case eSpell::NONE: // Not a spell but a special node targeting
-			r1 = store = 0;
-			run_special(eSpecCtx::TARGET, spec_target_type, spell_caster, where, &r1, &adjust, &store);
-			if(store > 0) redraw_screen(REFRESH_ALL);
+			run_special(eSpecCtx::TARGET, spec_target_type, spell_caster, where, nullptr, nullptr, &need_redraw);
+			if(need_redraw) redraw_screen(REFRESH_ALL);
 			break;
 		case eSpell::SCRY_MONSTER: case eSpell::CAPTURE_SOUL:
 			if(iLiving* targ = univ.target_there(where, TARG_MONST)) {
@@ -1352,14 +1353,15 @@ void cast_town_spell(location where) {
 
 // TODO: Currently, the node is called before any spell-specific behaviour (eg missiles) occurs.
 bool cast_spell_on_space(location where, eSpell spell) {
-	short s1 = 0,s2 = 0,s3 = 0;
+	short s1 = 0;
 	
 	for(size_t i = 0; i < univ.town->special_locs.size(); i++)
 		if(where == univ.town->special_locs[i]) {
+			bool need_redraw = false;
 			// TODO: Is there a way to skip this condition without breaking compatibility?
 			if(univ.town->specials[univ.town->special_locs[i].spec].type == eSpecType::IF_CONTEXT)
-				run_special(eSpecCtx::TARGET,2,univ.town->special_locs[i].spec,where,&s1,&s2,&s3);
-			if(s3) redraw_terrain();
+				run_special(eSpecCtx::TARGET, eSpecCtxType::TOWN, univ.town->special_locs[i].spec, where, &s1, nullptr, &need_redraw);
+			if(need_redraw) redraw_terrain();
 			return !s1;
 		}
 	if(spell == eSpell::RITUAL_SANCTIFY)
@@ -1660,7 +1662,7 @@ static void put_pc_caster_buttons(cDialog& me) {
 		std::string n = boost::lexical_cast<std::string>(i + 1);
 		if(me["caster" + n].isVisible()) {
 			if(i == pc_casting)
-				me["pc" + n].setColour(sf::Color::Red);
+				me["pc" + n].setColour(Colours::RED);
 			else me["pc" + n].setColour(me.getDefTextClr());
 		}
 	}
@@ -1670,8 +1672,8 @@ static void put_pc_target_buttons(cDialog& me, short& store_last_target_darkened
 	
 	if(store_spell_target < 6) {
 		std::string n = boost::lexical_cast<std::string>(store_spell_target + 1);
-		me["hp" + n].setColour(sf::Color::Red);
-		me["sp" + n].setColour(sf::Color::Red);
+		me["hp" + n].setColour(Colours::RED);
+		me["sp" + n].setColour(Colours::RED);
 	}
 	if((store_last_target_darkened < 6) && (store_last_target_darkened != store_spell_target)) {
 		std::string n = boost::lexical_cast<std::string>(store_last_target_darkened + 1);
@@ -2474,7 +2476,7 @@ void kill_pc(cPlayer& which_pc,eMainStatus type) {
 		for(short i = 0; i < which_pc.items.size(); i++)
 			which_pc.equip[i] = false;
 		
-		item_loc = (overall_mode >= MODE_COMBAT) ? which_pc.combat_pos : univ.party.town_loc;
+		item_loc = is_combat() ? which_pc.combat_pos : univ.party.town_loc;
 		
 		if(!is_out()) {
 			if(type == eMainStatus::DUST)

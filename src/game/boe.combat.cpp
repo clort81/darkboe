@@ -18,6 +18,7 @@
 #include "boe.specials.hpp"
 #include "boe.graphutil.hpp"
 #include "boe.main.hpp"
+#include "boe.ui.hpp"
 #include "mathutil.hpp"
 #include "choicedlog.hpp"
 #include "boe.menus.hpp"
@@ -46,7 +47,8 @@ extern short missile_firer,current_monst_tactic;
 eSpell spell_being_cast;
 bool spell_freebie;
 short missile_inv_slot, ammo_inv_slot;
-short spell_caster, spec_target_type, spec_target_fail, spec_target_options;
+eSpecCtxType spec_target_type;
+short spell_caster, spec_target_fail, spec_target_options;
 short force_wall_position = 10; //  10 -> no force wall
 bool processing_fields = true;
 short futzing;
@@ -360,7 +362,7 @@ void start_outdoor_combat(cOutdoors::cCreature encounter,location where,short nu
 	set_pc_moves();
 	pick_next_pc();
 	center = univ.current_pc().combat_pos;
-	draw_buttons(0);
+	UI::toolbar.draw(mainPtr);
 	put_pc_screen();
 	set_stat_window_for_pc(univ.cur_pc);
 	
@@ -860,11 +862,11 @@ void pc_attack_weapon(short who_att,iLiving& target,short hit_adj,short dam_adj,
 				attacker.restore_sp(before / 3);
 			}
 		} else if(weap.ability == eItemAbil::WEAPON_CALL_SPECIAL) {
-			short s1,s2,s3;
+			short s1;
 			univ.party.force_ptr(21, target.get_loc().x);
 			univ.party.force_ptr(22, target.get_loc().y);
 			univ.party.force_ptr(20, i_monst);
-			run_special(eSpecCtx::ATTACKING_MELEE, 0, weap.abil_data[0],attacker.combat_pos, &s1, &s2, &s3);
+			run_special(eSpecCtx::ATTACKING_MELEE, eSpecCtxType::SCEN, weap.abil_data[0], attacker.combat_pos, &s1);
 			if(s1 > 0)
 				attacker.ap += 4;
 		}
@@ -1007,7 +1009,7 @@ void place_target(location target) {
 }
 
 void do_combat_cast(location target) {
-	short adjust,r1,r2,level,bonus = 1,dummy;
+	short adjust,r1,r2,level,bonus = 1;
 	snd_num_t store_sound = 0;
 	bool freebie = false,ap_taken = false,cost_taken = false;
 	short num_targets = 1;
@@ -1117,12 +1119,13 @@ void do_combat_cast(location target) {
 					draw_terrain(2);
 				}
 				boom_targ[i] = target;
+				bool need_redraw = false;
 				switch(spell_being_cast) {
 					case eSpell::NONE: // Not a spell but a special node targeting
-						r1 = r2 = 0;
-						run_special(eSpecCtx::TARGET, spec_target_type, spell_caster, target, &r1, &dummy, &r2);
+						r1 = 0;
+						run_special(eSpecCtx::TARGET, spec_target_type, spell_caster, target, &r1, nullptr, &need_redraw);
 						failed = r1;
-						if(r2 > 0) redraw_screen(REFRESH_ALL);
+						if(need_redraw) redraw_screen(REFRESH_ALL);
 						break;
 					case eSpell::GOO: case eSpell::WEB: case eSpell::GOO_BOMB:
 						place_spell_pattern(current_pat,target,FIELD_WEB,univ.cur_pc);
@@ -1850,31 +1853,31 @@ void fire_missile(location target) {
 					}
 				} else if(ammo.ability == eItemAbil::WEAPON_CALL_SPECIAL) {
 					// TODO: Should this be checked on the missile as well as on the ammo? (Provided they're different.)
-					short s1,s2,s3;
+					short s1;
 					univ.party.force_ptr(21, victim->get_loc().x);
 					univ.party.force_ptr(22, victim->get_loc().y);
 					univ.party.force_ptr(20, univ.get_target_i(*victim));
-					run_special(eSpecCtx::ATTACKING_RANGE, 0, missile.abil_data[0], missile_firer.combat_pos, &s1, &s2, &s3);
+					run_special(eSpecCtx::ATTACKING_RANGE, eSpecCtxType::SCEN, missile.abil_data[0], missile_firer.combat_pos, &s1);
 					if(s1 > 0)
 						missile_firer.ap += (overall_mode == MODE_FIRING) ? 3 : 2;
 				}
 				if(cCreature* monst = dynamic_cast<cCreature*>(victim)) {
 					if(monst->abil[eMonstAbil::HIT_TRIGGER].active) {
-					short s1,s2,s3;
+					short s1;
 					univ.party.force_ptr(21, monst->cur_loc.x);
 					univ.party.force_ptr(22, monst->cur_loc.y);
 					univ.party.force_ptr(20, univ.get_target_i(*monst));
-					run_special(eSpecCtx::ATTACKED_RANGE, 0, monst->abil[eMonstAbil::HIT_TRIGGER].special.extra1, missile_firer.combat_pos, &s1, &s2, &s3);
+						run_special(eSpecCtx::ATTACKED_RANGE, eSpecCtxType::SCEN, monst->abil[eMonstAbil::HIT_TRIGGER].special.extra1, missile_firer.combat_pos, &s1);
 					if(s1 > 0)
 						missile_firer.ap += (overall_mode == MODE_FIRING) ? 3 : 2;
 					}
 				} else if(cPlayer* pc = dynamic_cast<cPlayer*>(victim)) {
 					if(cInvenSlot spec_item = pc->has_abil_equip(eItemAbil::HIT_CALL_SPECIAL)) {
-						short s1,s2,s3;
+						short s1;
 						univ.party.force_ptr(21, pc->combat_pos.x);
 						univ.party.force_ptr(22, pc->combat_pos.y);
 						univ.party.force_ptr(20, univ.get_target_i(*pc));
-						run_special(eSpecCtx::ATTACKED_RANGE, 0, spec_item->abil_data[0], missile_firer.combat_pos, &s1, &s2, &s3);
+						run_special(eSpecCtx::ATTACKED_RANGE, eSpecCtxType::SCEN, spec_item->abil_data[0], missile_firer.combat_pos, &s1);
 						if(s1 > 0)
 							missile_firer.ap += (overall_mode == MODE_FIRING) ? 3 : 2;
 					}
@@ -2195,7 +2198,7 @@ void do_monster_turn() {
 	monsters_going = true; // This affects how graphics are drawn.
 	
 	num_monst = univ.town.monst.size();
-	if(overall_mode < MODE_COMBAT)
+	if(!is_combat())
 		which_combat_type = 1;
 	
 	for(short i = 0; i < num_monst; i++) {  // Give monsters ap's, check activity
@@ -2484,14 +2487,14 @@ void do_monster_turn() {
 				// Unusual ability - don't use multiple times per round
 				if(cur_monst->abil[eMonstAbil::SPECIAL].active && !special_called && party_can_see_monst(i) && get_ran(1,1,1000) <= cur_monst->abil[eMonstAbil::SPECIAL].special.extra3) {
 					uAbility abil = cur_monst->abil[eMonstAbil::SPECIAL];
-					short s1, s2, s3;
+					short s1;
 					special_called = true;
 					univ.party.force_ptr(21, targ_space.x);
 					univ.party.force_ptr(22, targ_space.y);
 					if(target < 6)
 						univ.party.force_ptr(20, 11 + target); // ready to be passed to SELECT_TARGET node
 					else univ.party.force_ptr(20, target); // ready to be passed to SELECT_TARGET node
-					run_special(eSpecCtx::MONST_SPEC_ABIL,0,abil.special.extra1,cur_monst->cur_loc,&s1,&s2,&s3);
+					run_special(eSpecCtx::MONST_SPEC_ABIL, eSpecCtxType::SCEN, abil.special.extra1, cur_monst->cur_loc, &s1);
 					if(s1 <= 0)
 						take_m_ap(abil.special.extra2,cur_monst);
 				}
@@ -2571,7 +2574,7 @@ void do_monster_turn() {
 			}
 			
 			// pcs attack any fleeing monsters
-			if((overall_mode >= MODE_COMBAT) && (overall_mode < MODE_TALKING))
+			if(is_combat())
 				for(short k = 0; k < 6; k++)
 					if(univ.party[k].main_status == eMainStatus::ALIVE && !monst_adjacent(univ.party[k].combat_pos,i)
 						&& pc_adj[k] && !cur_monst->is_friendly() && cur_monst->active > 0 &&
@@ -2736,7 +2739,7 @@ void do_monster_turn() {
 	}
 	
 	// If in town, need to restore center
-	if(overall_mode < MODE_COMBAT)
+	if(!is_combat())
 		center = univ.party.town_loc;
 	if(had_monst)
 		put_pc_screen();
@@ -2941,20 +2944,20 @@ void monster_attack(short who_att,iLiving* target) {
 					
 					if(pc_target != nullptr) {
 						if(cInvenSlot spec_item = pc_target->has_abil_equip(eItemAbil::HIT_CALL_SPECIAL)) {
-							short s1,s2,s3;
+							short s1;
 							univ.party.force_ptr(21, target->get_loc().x);
 							univ.party.force_ptr(22, target->get_loc().y);
 							univ.party.force_ptr(20, i_monst);
-							run_special(eSpecCtx::ATTACKED_MELEE, 0, spec_item->abil_data[0], attacker->cur_loc, &s1, &s2, &s3);
+							run_special(eSpecCtx::ATTACKED_MELEE, eSpecCtxType::SCEN, spec_item->abil_data[0], attacker->cur_loc, &s1);
 							if(s1 > 0)
 								attacker->ap += 4;
 						}
 					} else if(m_target != nullptr && m_target->abil[eMonstAbil::HIT_TRIGGER].active) {
-						short s1,s2,s3;
+						short s1;
 						univ.party.force_ptr(21, target->get_loc().x);
 						univ.party.force_ptr(22, target->get_loc().y);
 						univ.party.force_ptr(20, i_monst);
-						run_special(eSpecCtx::ATTACKED_MELEE, 0, m_target->abil[eMonstAbil::HIT_TRIGGER].special.extra1, attacker->cur_loc, &s1, &s2, &s3);
+						run_special(eSpecCtx::ATTACKED_MELEE, eSpecCtxType::SCEN, m_target->abil[eMonstAbil::HIT_TRIGGER].special.extra1, attacker->cur_loc, &s1);
 						if(s1 > 0)
 							attacker->ap += 4;
 					}
@@ -2987,7 +2990,7 @@ void monst_fire_missile(short m_num,short bless,std::pair<eMonstAbil,uAbility> a
 	cPlayer* pc_target = dynamic_cast<cPlayer*>(target);
 	cCreature* m_target = dynamic_cast<cCreature*>(target);
 	
-	if(((overall_mode >= MODE_COMBAT) && (overall_mode <= MODE_TALKING)) && (center_on_monst)) {
+	if(is_combat() && center_on_monst) {
 		frame_space(source,0,univ.town.monst[m_num].x_width,univ.town.monst[m_num].y_width);
 		if(m_target != nullptr)
 			frame_space(targ_space,1,m_target->x_width,m_target->y_width);
@@ -3082,21 +3085,21 @@ void monst_fire_missile(short m_num,short bless,std::pair<eMonstAbil,uAbility> a
 		}
 		if(pc_target != nullptr) {
 			if(cInvenSlot spec_item = pc_target->has_abil_equip(eItemAbil::HIT_CALL_SPECIAL)) {
-				short s1,s2,s3;
+				short s1;
 				// TODO: This force_ptr...run_special code is almost duplicated in several places; maybe make a call_attack_spec subroutine!
 				univ.party.force_ptr(21, target->get_loc().x);
 				univ.party.force_ptr(22, target->get_loc().y);
 				univ.party.force_ptr(20, i_monst);
-				run_special(eSpecCtx::ATTACKED_RANGE, 0, spec_item->abil_data[0], univ.town.monst[m_num].cur_loc, &s1, &s2, &s3);
+				run_special(eSpecCtx::ATTACKED_RANGE, eSpecCtxType::SCEN, spec_item->abil_data[0], univ.town.monst[m_num].cur_loc, &s1);
 				if(s1 > 0)
 					univ.town.monst[m_num].ap += abil.second.get_ap_cost(abil.first);
 			}
 		} else if(m_target != nullptr && m_target->abil[eMonstAbil::HIT_TRIGGER].active) {
-			short s1,s2,s3;
+			short s1;
 			univ.party.force_ptr(21, m_target->cur_loc.x);
 			univ.party.force_ptr(22, m_target->cur_loc.y);
 			univ.party.force_ptr(20, i_monst);
-			run_special(eSpecCtx::ATTACKED_RANGE, 0, m_target->abil[eMonstAbil::HIT_TRIGGER].special.extra1, univ.town.monst[m_num].cur_loc, &s1, &s2, &s3);
+			run_special(eSpecCtx::ATTACKED_RANGE, eSpecCtxType::SCEN, m_target->abil[eMonstAbil::HIT_TRIGGER].special.extra1, univ.town.monst[m_num].cur_loc, &s1);
 			if(s1 > 0)
 				univ.town.monst[m_num].ap += abil.second.get_ap_cost(abil.first);
 		}
@@ -3341,7 +3344,7 @@ bool monst_breathe(cCreature *caster,location targ_space,uAbility abil) {
 	
 	caster->breathe_note();
 	short level = get_ran(abil.gen.strength,1,8);
-	if(overall_mode < MODE_COMBAT)
+	if(!is_combat())
 		level = level / 3;
 	start_missile_anim();
 	hit_space(targ_space,level,abil.gen.dmg,1,1);
@@ -4494,20 +4497,19 @@ void hit_space(location target,short dam,eDamageType type,short report,short hit
 				stop_hitting = (hit_all == 1) ? false : true;
 			}
 	
-	if(overall_mode >= MODE_COMBAT)
+	if(is_combat()) {
 		for(cPlayer& pc : univ.party)
 			if(pc.main_status == eMainStatus::ALIVE && !stop_hitting)
 				if(pc.combat_pos == target) {
 					damage_pc(pc,dam,type,eRace::UNKNOWN,0);
 					stop_hitting = (hit_all == 1) ? false : true;
 				}
-	if(overall_mode < MODE_COMBAT)
-		if(target == univ.party.town_loc) {
-			fast_bang = 1;
-			hit_party(dam,type);
-			fast_bang = 0;
-			stop_hitting = (hit_all == 1) ? false : true;
-		}
+	} else if(target == univ.party.town_loc) {
+		fast_bang = 1;
+		hit_party(dam,type);
+		fast_bang = 0;
+		stop_hitting = (hit_all == 1) ? false : true;
+	}
 	
 	if((report == 1) && (hit_all == 0) && !stop_hitting)
 		add_string_to_buf("  Missed.");
@@ -4606,7 +4608,7 @@ void handle_acid() {
 					damage_pc(pc,r1,eDamageType::MAGIC,eRace::UNKNOWN,0);
 					move_to_zero(pc.status[eStatus::ACID]);
 				}
-		if(overall_mode < MODE_COMBAT)
+		if(!is_combat())
 			boom_space(univ.party.out_loc,overall_mode,3,r1,8);
 	}
 }
@@ -4656,7 +4658,7 @@ void end_combat() {
 	if(univ.current_pc().main_status != eMainStatus::ALIVE)
 		univ.cur_pc = first_active_pc();
 	put_item_screen(stat_window);
-	draw_buttons(0);
+	UI::toolbar.draw(mainPtr);
 }
 
 
@@ -5414,18 +5416,17 @@ void scloud_space(short m,short n) {
 	
 	univ.town.set_scloud(m,n,true);
 	
-	if(overall_mode >= MODE_COMBAT)
+	if(is_combat()) {
 		for(cPlayer& pc : univ.party)
 			if(pc.main_status == eMainStatus::ALIVE)
 				if(pc.combat_pos == target) {
 					pc.curse(get_ran(1,1,2));
 				}
-	if(overall_mode < MODE_COMBAT)
-		if(target == univ.party.town_loc) {
-			for(cPlayer& pc : univ.party)
-				if(pc.main_status == eMainStatus::ALIVE)
-					pc.curse(get_ran(1,1,2));
-		}
+	} else if(target == univ.party.town_loc) {
+		for(cPlayer& pc : univ.party)
+			if(pc.main_status == eMainStatus::ALIVE)
+				pc.curse(get_ran(1,1,2));
+	}
 }
 
 void web_space(short m,short n) {
@@ -5433,33 +5434,31 @@ void web_space(short m,short n) {
 	
 	univ.town.set_web(m,n,true);
 	
-	if(overall_mode >= MODE_COMBAT)
+	if(is_combat()) {
 		for(cPlayer& pc : univ.party)
 			if(pc.main_status == eMainStatus::ALIVE)
 				if(pc.combat_pos == target) {
 					pc.web(3);
 				}
-	if(overall_mode < MODE_COMBAT)
-		if(target == univ.party.town_loc) {
-			for(cPlayer& pc : univ.party)
-				pc.web(3);
-		}
+	} else if(target == univ.party.town_loc) {
+		for(cPlayer& pc : univ.party)
+			pc.web(3);
+	}
 }
 void sleep_cloud_space(short m,short n) {
 	location target(m, n);
 	
 	univ.town.set_sleep_cloud(m,n,true);
 	
-	if(overall_mode >= MODE_COMBAT)
+	if(is_combat()) {
 		for(cPlayer& pc : univ.party)
 			if(pc.main_status == eMainStatus::ALIVE)
 				if(pc.combat_pos == target) {
 					pc.sleep(eStatus::ASLEEP,3,0);
 				}
-	if(overall_mode < MODE_COMBAT)
-		if(target == univ.party.town_loc) {
-			univ.party.sleep(eStatus::ASLEEP,3,0);
-		}
+	} else if(target == univ.party.town_loc) {
+		univ.party.sleep(eStatus::ASLEEP,3,0);
+	}
 }
 
 

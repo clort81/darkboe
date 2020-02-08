@@ -1,0 +1,47 @@
+115c115
+< 	style.colour = sf::Color::White;
+---
+> 	style.colour = Colours::BLACK; // Clort inverted
+121c121
+< 	style.colour = sf::Color::Black;
+---
+> 	style.colour = Colours::BLACK;
+137c137
+< 			style.colour = sf::Color::Black;
+---
+> 			style.colour = Colours::BLACK;
+182c182
+< 			style.colour = sf::Color::Black;
+---
+> 			style.colour = Colours::BLACK;
+255c255
+< 			style.colour = sf::Color::Black;
+---
+> 			style.colour = Colours::BLACK;
+269c269
+< 			style.colour = sf::Color::Black;
+---
+> 			style.colour = Colours::BLACK;
+293c293
+< 			style.colour = sf::Color::Black;
+---
+> 			style.colour = Colours::BLACK;
+330c330
+< 					style.colour = sf::Color::Black;
+---
+> 					style.colour = Colours::BLACK;
+1070,1071c1070,1072
+< 		sf::Text text(text_buffer[line_to_print].line, *ResMgr::fonts.get("plain"), 12);
+< 		text.setColor(sf::Color::Black);
+---
+> 		sf::Text text(text_buffer[line_to_print].line, *ResMgr::fonts.get("plain"), 12); // text log onscreen
+> 		//style.colour = Colours::BLACK; // Clort changedtothis
+> 		text.setColor(Colours::BLACK); // Clort this is wrong, should be style.colour = Colours::BLACK
+1157c1158
+< 	sf::Color back_clr = {64, 64, 64, 42};
+---
+> 	sf::Color back_clr = {64, 64, 64, 42}; // Clort TODO make text label back swappable
+1160c1161
+< 	style.colour = sf::Color::White;
+---
+> 	style.colour = Colours::WHITE;

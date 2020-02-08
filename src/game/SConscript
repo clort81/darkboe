@@ -20,6 +20,7 @@ game_sources = Split("""
 	boe.text.cpp
 	boe.town.cpp
 	boe.townspec.cpp
+	boe.ui.cpp
 	../pcedit/pc.editors.cpp
 	../fileio/fileio_party.cpp
 	../view_dialogs.cpp
@@ -38,6 +39,7 @@ elif str(platform) == "win32":
 elif str(platform) == "posix":
 	game_sources.extend(Split("""
 		boe.menus.linux.cpp
+		boe.menu.cpp
 	"""))
 
 boe = env.Program("#build/bin/Blades of Exile", game_sources + party_classes + common_sources)

@@ -27,7 +27,7 @@
 #include "button.hpp"
 #include "res_image.hpp"
 #include "prefs.hpp"
-#include "tools/enum_map.hpp"
+#include "enum_map.hpp"
 
 short monsters_faces[190] = {
 	0,1,2,3,4,5,6,7,8,9,
@@ -389,7 +389,7 @@ void do_missile_anim(short num_steps,location missile_origin,short sound_num) {
 	
 	play_sound(-1 * sound_num);
 	
-	sf::Texture& missiles_gworld = *ResMgr::get<ImageRsrc>("missiles");
+	sf::Texture& missiles_gworld = *ResMgr::graphics.get("missiles");
 	// Now, at last, launch missile
 	for(short t = 0; t < num_steps; t++) {
 		draw_terrain();
@@ -424,7 +424,7 @@ void do_missile_anim(short num_steps,location missile_origin,short sound_num) {
 						base -= 10000;
 					} else base -= 1000;
 					base += step % 4;
-					sf::Texture* from_gw = nullptr;
+					std::shared_ptr<const sf::Texture> from_gw = nullptr;
 					graf_pos_ref(from_gw, from_rect) = spec_scen_g.find_graphic(base, isParty);
 					if(from_gw == nullptr) continue;
 					from_rect.width() = 18;
@@ -435,9 +435,7 @@ void do_missile_anim(short num_steps,location missile_origin,short sound_num) {
 				}
 			}
 		mainPtr.display();
-		int speed = get_int_pref("GameSpeed");
-		if(speed == 3 || (speed == 1 && t % 4 == 0) || (speed == 2 && t % 3 == 0))
-			sf::sleep(time_in_ticks(1));
+		sf::sleep(sf::milliseconds(2 + 5 * get_int_pref("GameSpeed")));
 	}
 	
 	// Exit gracefully, and clean up screen
@@ -517,8 +515,8 @@ void do_explosion_anim(short /*sound_num*/,short special_draw, short snd) {
 	
 	TextStyle style;
 	style.font = FONT_BOLD;
-	style.pointSize = 11;
-	style.lineHeight = 11;
+	style.pointSize = 10;
+	style.lineHeight = 10;
 	mainPtr.setActive();
 	
 	// init missile paths
@@ -547,7 +545,7 @@ void do_explosion_anim(short /*sound_num*/,short special_draw, short snd) {
 		play_sound(-1 * snd_num);
 	}
 	
-	sf::Texture& boom_gworld = *ResMgr::get<ImageRsrc>("booms");
+	sf::Texture& boom_gworld = *ResMgr::graphics.get("booms");
 	// Now, at last, do explosion
 	for(short t = (special_draw == 2) ? 6 : 0; t < ((special_draw == 1) ? 6 : 11); t++) { // t goes up to 10 to make sure screen gets cleaned up
 		draw_terrain();
@@ -557,7 +555,7 @@ void do_explosion_anim(short /*sound_num*/,short special_draw, short snd) {
 			if(store_booms[i].boom_type >= 0) {
 				if((t + store_booms[i].offset >= 0) && (t + store_booms[i].offset <= 7)) {
 					if(cur_boom_type >= 1000) {
-						sf::Texture* src_gworld;
+						std::shared_ptr<const sf::Texture> src_gworld;
 						graf_pos_ref(src_gworld, from_rect) = spec_scen_g.find_graphic(cur_boom_type - 1000 + t);
 						rect_draw_some_item(*src_gworld, from_rect, mainPtr, explode_place_rect[i], sf::BlendAlpha);
 					} else {
@@ -571,12 +569,12 @@ void do_explosion_anim(short /*sound_num*/,short special_draw, short snd) {
 						text_rect.top += 13;
 						text_rect.height() = 10;
 						std::string dam_str = std::to_string(store_booms[i].val_to_place);
-						style.colour = sf::Color::White;
+						style.colour = Colours::WHITE; // Clort2 damage was sf::Color::White;
 						text_rect.offset(-1,-1);
 						win_draw_string(mainPtr,text_rect,dam_str,eTextMode::CENTRE,style);
 						text_rect.offset(2,2);
 						win_draw_string(mainPtr,text_rect,dam_str,eTextMode::CENTRE,style);
-						style.colour = sf::Color::Black;
+						style.colour = Colours::BLACK; // Clort2 damage was sf::Color::Black;
 						text_rect.offset(-1,-1);
 						win_draw_string(mainPtr,text_rect,dam_str,eTextMode::CENTRE,style);
 						mainPtr.setActive();
@@ -606,12 +604,12 @@ void click_shop_rect(rectangle area_rect) {
 graf_pos calc_item_rect(int num,rectangle& to_rect) {
 	if(num >= 1000) return spec_scen_g.find_graphic(num - 1000);
 	rectangle from_rect = {0,0,18,18};
-	sf::Texture *from_gw;
+	std::shared_ptr<const sf::Texture> from_gw;
 	if(num < 55) {
-		from_gw = ResMgr::get<ImageRsrc>("objects").get();
+		from_gw = &ResMgr::graphics.get("objects");
 		from_rect = calc_rect(num % 5, num / 5);
 	}else{
-		from_gw = ResMgr::get<ImageRsrc>("tinyobj").get();
+		from_gw = &ResMgr::graphics.get("tinyobj");
 		to_rect.inset(5,9);
 		from_rect.offset(18 * (num % 10), 18 * (num / 10));
 	}
@@ -630,11 +628,8 @@ void draw_shop_graphics(bool pressed,rectangle clip_area_rect) {
 	// The green components on the second line were 40959 and 24575
 	// TODO: The Windows version appears to use completely different colours?
 	sf::Color c[7] = {
-		{140,140,140},
-                {80,80,128},{80,80,57},
-		{180,180,180}, // Shopping for [name]
-		{100,100,232}, 
-		{40,220,40},{30,190,30}
+		{0,0,0},{0,0,128},{0,0,57},{0,0,104},{0,0,232},
+		{0,160,0},{0,96,0}
 	};
 	rectangle shopper_name = {44,6,56,260};
 	long current_pos;
@@ -645,14 +640,14 @@ void draw_shop_graphics(bool pressed,rectangle clip_area_rect) {
 		"Expensive","Exorbitant","Utterly Ridiculous"};
 	cItem base_item;
 	
-	if(overall_mode != 21) {
+	if(overall_mode != MODE_SHOPPING) {
 		return;
 	}
 	
 	talk_gworld.setActive();
 	TextStyle style;
 	style.font = FONT_DUNGEON;
-	style.pointSize = 20; // Clort is now ClortDamsel
+	style.pointSize = 18;
 	
 	talk_gworld.setActive();
 	if(pressed) {
@@ -660,41 +655,41 @@ void draw_shop_graphics(bool pressed,rectangle clip_area_rect) {
 	}
 	
 	area_rect = rectangle(talk_gworld);
-	frame_rect(talk_gworld, area_rect, CL_OFFWHITE); // Clort border lines were black
+	frame_rect(talk_gworld, area_rect, Colours::BLACK); // Clort2 tie shop frame to text BLACK
 	area_rect.inset(1,1);
 	tileImage(talk_gworld, area_rect,bg[12]);
 	
-	frame_rect(talk_gworld, shop_frame, CL_OFFWHITE); // Clort border lines were black
+	frame_rect(talk_gworld, shop_frame, Colours::BLACK); // Clort2 tie shop frame to text BLACK
 	
 	// Place store icon
 	if(!pressed) {
 		rectangle from_rect = {0,0,32,32};
-		sf::Texture* from_gw;
+		std::shared_ptr<const sf::Texture> from_gw;
 		int i = std::max<int>(0, active_shop.getFace());
 		if(i >= 1000) {
 			graf_pos_ref(from_gw, from_rect) = spec_scen_g.find_graphic(i - 1000);
 		} else {
 			from_rect.offset(32 * (i % 10),32 * (i / 10));
-			from_gw = ResMgr::get<ImageRsrc>("talkportraits").get();
+			from_gw = &ResMgr::graphics.get("talkportraits");
 		}
 		rect_draw_some_item(*from_gw, from_rect, talk_gworld, face_rect);
 	}
 	
 	
 	// Place name of store and shopper name
-	style.colour = CL_LTBLACK; // Clort: Shadow for storename - was c[3];
+	style.colour = Colours::SHADOW; // Clort2 shaded background of storename is dark: was style.colour = c[3];
 	style.lineHeight = 18;
 	dest_rect = title_rect;
 	dest_rect.offset(1,1);
 	win_draw_string(talk_gworld,dest_rect,active_shop.getName(),eTextMode::LEFT_TOP,style);
 	dest_rect.offset(-1,-1);
-	style.colour = c[4];
+	style.colour = Colours::SHOPBLUE; // Clort2 blue shop text differs from global blue: was style.colour = c[4];
 	win_draw_string(talk_gworld,dest_rect,active_shop.getName(),eTextMode::LEFT_TOP,style);
 	
 	style.font = FONT_BOLD;
-	style.pointSize = 11;
+	style.pointSize = 12;
 	
-	style.colour = CL_LTGREY; // Clort this needs brightening // shopping for
+	style.colour = Colours::SHOPBLUE; // Clort2 blue shop text differs from  global blue: was style.colour = c[3];
 	std::ostringstream title;
 	switch(active_shop.getPrompt()) {
 		case eShopPrompt::HEALING:
@@ -722,10 +717,11 @@ void draw_shop_graphics(bool pressed,rectangle clip_area_rect) {
 	win_draw_string(talk_gworld,shopper_name,title.str(),eTextMode::LEFT_TOP,style);
 	
 	if(pressed)
-		style.colour = c[4];
-	else style.colour = CL_LTGREY; // Clort Shop item colors -  was sf::Color::Black;
+		style.colour = Colours::SHOPBLUE; // Clort2 tie clicked shopitem text to global blue- was: style.colour = c[4];
+	else 
+		style.colour = Colours::BLACK; // Clort2 tie black shopitem text to global black- was: style.colour = sf::Color::Black;
 	
-	sf::Texture& invenbtn_gworld = *ResMgr::get<ImageRsrc>("invenbtns");
+	sf::Texture& invenbtn_gworld = *ResMgr::graphics.get("invenbtns");
 	// Place all the items
 	for(short i = 0; i < 8; i++) {
 		current_pos = i + shop_sbar->getPosition();
@@ -737,7 +733,7 @@ void draw_shop_graphics(bool pressed,rectangle clip_area_rect) {
 		base_item = item.item;
 		std::string cur_name = base_item.full_name, cur_info_str;
 		rectangle from_rect, to_rect = shopping_rects[i][SHOPRECT_GRAPHIC];
-		sf::Texture* from_gw;
+		std::shared_ptr<const sf::Texture> from_gw;
 		switch(item.type) {
 			case eShopItemType::ITEM:
 				base_item.ident = true;
@@ -768,7 +764,7 @@ void draw_shop_graphics(bool pressed,rectangle clip_area_rect) {
 		rect_draw_some_item(*from_gw, from_rect, talk_gworld, to_rect, sf::BlendAlpha);
 		
 		// Now draw item
-		style.pointSize = 11;
+		style.pointSize = 12;
 		style.lineHeight = 12;
 		win_draw_string(talk_gworld,shopping_rects[i][SHOPRECT_ITEM_NAME],cur_name,eTextMode::WRAP,style);
 		cur_name = std::to_string(cur_cost);
@@ -779,7 +775,7 @@ void draw_shop_graphics(bool pressed,rectangle clip_area_rect) {
 		cost_rect.top += 3;
 		cost_rect.height() = 7;
 		rect_draw_some_item(invenbtn_gworld, {0, 29, 7, 36}, talk_gworld, cost_rect, sf::BlendAlpha);
-		style.pointSize = 11;
+		style.pointSize = 10;
 		win_draw_string(talk_gworld,shopping_rects[i][SHOPRECT_ITEM_EXTRA],cur_info_str,eTextMode::WRAP,style);
 		rect_draw_some_item(invenbtn_gworld,item_info_from,talk_gworld,shopping_rects[i][SHOPRECT_ITEM_HELP],pressed ? sf::BlendNone : sf::BlendAlpha);
 		
@@ -788,7 +784,7 @@ void draw_shop_graphics(bool pressed,rectangle clip_area_rect) {
 	// Finally, cost info and help strs
 	title.str("");
 	title << "Prices here are " << cost_strs[active_shop.getCostAdjust()] << '.';
-	style.pointSize = 11;
+	style.pointSize = 10;
 	style.lineHeight = 12;
 	win_draw_string(talk_gworld,bottom_help_rects[0],title.str(),eTextMode::WRAP,style);
 	win_draw_string(talk_gworld,bottom_help_rects[1],"Click on item name (or type 'a'-'h') to buy.",eTextMode::WRAP,style);
@@ -838,9 +834,9 @@ void click_talk_rect(word_rect_t word) {
 	wordRect.offset(talk_area_rect.topLeft());
 	TextStyle style;
 	style.font = FONT_DUNGEON;
-	style.pointSize = 20; // Clort is now ClortDamsel
-	style.lineHeight = 20;
-	style.colour = word.on;
+	style.pointSize = 18;
+	style.lineHeight = 18;
+	style.colour = Colours::CHATBLUE; //Clort2 color of clicked chat action: was style.colour = word.on;
 	win_draw_string(mainPtr, wordRect, word.word, eTextMode::LEFT_TOP, style);
 	place_talk_face();
 	mainPtr.display();
@@ -919,17 +915,18 @@ void place_talk_str(std::string str_to_place,std::string str_to_place2,short col
 	
 	// In the 0..65535 range, these blue components were: 0, 32767, 14535, 26623, 59391
 	// The green components on the second line were 40959 and 24575
+	/* Clort2 moved colors to render_shapes.hpp
 	sf::Color c[8] = {
-		//{0,0,0},{0,0,128},{0,0,57},{0,0,104},{0,0,232},
-		{0,0,0},{0,0,128},{190,190,190},{0,20,204},{152,162,245}, // Clort we should name color types
-		{20,220,47},{0,96,0},{200,30,50}
+		{0,0,0},{0,0,128},{0,0,57},{0,0,104},{0,0,232},
+		{0,160,0},{0,96,0},{160,0,20}
 	};
+	*/
 	
 	talk_gworld.setActive();
 	
 	TextStyle style;
 	style.font = FONT_DUNGEON;
-	style.pointSize = 20; // Clort - is now ClortDamsel 20
+	style.pointSize = 18;
 	
 	if(c_rect.right > 0) {
 		mainPtr.setActive();
@@ -943,13 +940,13 @@ void place_talk_str(std::string str_to_place,std::string str_to_place2,short col
 	tileImage(talk_gworld, area_rect,bg[12]);
 	
 	// Place name oftalkee
-	style.colour = c[3]; // Clort background of name
+	style.colour = Colours::SHADOW; // Clort2 shadow behind talkee name: was style.colour = c[3];
 	style.lineHeight = 18;
 	dest_rect = title_rect;
-	dest_rect.offset(1,0); // Clort Move talkee name up 1 (y was 1)
+	dest_rect.offset(1,1);
 	win_draw_string(talk_gworld,dest_rect,title_string,eTextMode::LEFT_TOP,style);
-	dest_rect.offset(-1,-2);  // Clort y was -1
-	style.colour = c[4]; // Clort foreground of Name
+	dest_rect.offset(-1,-1);
+	style.colour = Colours::SHOPBLUE; // Clort2 talkee name is blue: was style.colour = c[4];
 	win_draw_string(talk_gworld,dest_rect,title_string,eTextMode::LEFT_TOP,style);
 	
 	talk_words.clear();
@@ -968,13 +965,14 @@ void place_talk_str(std::string str_to_place,std::string str_to_place2,short col
 	
 	// Place buttons at bottom.
 	if(color == 0)
-		style.colour = c[5];
-	else style.colour = c[6];
+		style.colour = Colours::CHATDKGREEN; // Clort2 button is darkgreen: was style.colour = c[5];
+	else 
+		style.colour = Colours::CHATLTGREEN; // Clort2 talkee name is blue: was style.colour = c[6];
 	for(short i = 0; i < 9; i++) {
 		if(!talk_end_forced || i == 6 || i == 5) {
 			word_rect_t preset_word(preset_words[i], preset_rects[i]);
-			preset_word.on = c[5];
-			preset_word.off = c[6];
+			preset_word.on = Colours::CHATDKGREEN; // Clort was c[5] dkgreen
+			preset_word.off = Colours::CHATLTGREEN; // Clort was c[6] ltgreen
 			switch(i) {
 				case 0: preset_word.node = TALK_LOOK; break;
 				case 1: preset_word.node = TALK_NAME; break;
@@ -992,10 +990,8 @@ void place_talk_str(std::string str_to_place,std::string str_to_place2,short col
 		}
 	}
 	
-	style.pointSize = 20; // Clort Talk dialogue text smaller than character title
-	style.lineHeight = 20; // Clort more space in dialogue text
 	dest_rect = word_place_rect;
-	style.colour = c[2];
+	style.colour = Colours::CHATBLUE; // Clort2 color of normal chat text: was style.colour = c[2];
 	// First determine the offsets of clickable words.
 	// The added spaces ensure that end-of-word boundaries are found
 	std::string str = str_to_place + " |" + str_to_place2 + " ";
@@ -1016,7 +1012,7 @@ void place_talk_str(std::string str_to_place,std::string str_to_place2,short col
 		}
 	}
 	
-	std::vector<rectangle> word_rects = draw_string_hilite(talk_gworld, dest_rect, str, style, hilites, color ? c[1] : c[7]);
+	std::vector<rectangle> word_rects = draw_string_hilite(talk_gworld, dest_rect, str, style, hilites, color ? Colours::WORDSBLUE : Colours::WORDSRED); // Clort2 was c[1] for normaltext, c[7] for red clickabletext
 	
 	if(!talk_end_forced) {
 		// Now build the list of word rects
@@ -1025,8 +1021,8 @@ void place_talk_str(std::string str_to_place,std::string str_to_place2,short col
 			thisRect.word = str.substr(hilites[i].first, hilites[i].second - hilites[i].first);
 			thisRect.rect = word_rects[i];
 			thisRect.node = nodes[i];
-			thisRect.on = c[1];
-			thisRect.off = c[2]; // Note: "off" is never used
+			thisRect.on = Colours::WORDSBLUE; // Clort2 was c[1] 
+			thisRect.off = Colours::CHATBLUE; // Clort2 was c[2] Note: "off" is never used
 			talk_words.push_back(thisRect);
 		}
 	}

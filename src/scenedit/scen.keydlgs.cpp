@@ -20,6 +20,7 @@
 #include "pictchoice.hpp"
 #include "res_strings.hpp"
 #include "spell.hpp"
+#include "render_shapes.hpp" // for colour constants
 
 extern short cen_x, cen_y;
 extern bool mouse_button_held;
@@ -129,7 +130,7 @@ short choose_background(short cur_choice, cDialog* parent) {
 	auto set_colour_for = [&](int which) {
 		sf::Color to = sf::Color::Black;
 		if(which == 2)
-			to = sf::Color::Red;
+			to = Colours::RED;
 		else if(which == 3)
 			to = {0x00, 0x00, 0x80};
 		else if(which == 11)
@@ -269,7 +270,7 @@ short choose_text_res(std::string res_list,short first_t,short last_t,unsigned s
 		cur_choice = -1;
 	else cur_choice -= first_t;
 	
-	StringRsrc strings = *ResMgr::get<StringRsrc>(res_list);
+	StringList strings = *ResMgr::strings.get(res_list);
 	cStringChoice dlog(strings.begin() + first_t - 1, strings.begin() + last_t, title, parent);
 	
 	return dlog.show(cur_choice);
@@ -354,13 +355,13 @@ short choose_text(eStrType list, unsigned short cur_choice, cDialog* parent, std
 			}
 			break;
 		case STRT_PICT:
-			strings = *ResMgr::get<StringRsrc>("picture-types");
+			strings = *ResMgr::strings.get("picture-types");
 			break;
 		case STRT_TRAP:
-			strings = *ResMgr::get<StringRsrc>("trap-types");
+			strings = *ResMgr::strings.get("trap-types");
 			break;
 		case STRT_HEALING:
-			strings = *ResMgr::get<StringRsrc>("shop-specials");
+			strings = *ResMgr::strings.get("shop-specials");
 			break;
 		case STRT_BUTTON:
 			for(auto btn : basic_buttons) {
@@ -391,7 +392,7 @@ short choose_text(eStrType list, unsigned short cur_choice, cDialog* parent, std
 			}
 			break;
 		case STRT_CONTEXT:
-			strings = *ResMgr::get<StringRsrc>("special-contexts");
+			strings = *ResMgr::strings.get("special-contexts");
 			break;
 		case STRT_SHOP:
 			for(cShop& shop : scenario.shops) {
@@ -791,7 +792,7 @@ pic_num_t choose_status_effect(short cur, bool party, cDialog* parent) {
 
 snd_num_t choose_sound(short cur, cDialog* parent, std::string title) {
 	if(cur < 0) cur = 0;
-	StringRsrc snd_names = *ResMgr::get<StringRsrc>("sound-names");
+	StringList snd_names = *ResMgr::strings.get("sound-names");
 	std::copy(scenario.snd_names.begin(), scenario.snd_names.end(), std::back_inserter(snd_names));
 	cStringChoice snd_dlg(snd_names, title, parent);
 	snd_dlg.attachSelectHandler([](cStringChoice&, int n) {

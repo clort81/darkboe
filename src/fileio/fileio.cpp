@@ -9,7 +9,9 @@
 #include "fileio.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
+#include <cstdlib>
 #include <boost/filesystem/operations.hpp>
 
 #include "res_image.hpp"
@@ -26,6 +28,16 @@ cursor_type Cursor::current = sword_curs;
 
 std::filebuf logfile;
 
+static fs::path get_posix_tempdir();
+
+static void add_resmgr_paths(const fs::path& basePath) {
+	ResMgr::graphics.pushPath(basePath/"graphics");
+	ResMgr::cursors.pushPath(basePath/"cursors");
+	ResMgr::fonts.pushPath(basePath/"fonts");
+	ResMgr::strings.pushPath(basePath/"strings");
+	ResMgr::sounds.pushPath(basePath/"sounds");
+}
+
 void init_directories(const char* exec_path) {
 	progDir = fs::canonical(exec_path);
 #ifdef __APPLE__
@@ -35,27 +47,22 @@ void init_directories(const char* exec_path) {
 #endif
 	progDir = progDir.parent_path();
 	// Initialize the resource manager paths
-	ResMgr::pushPath<ImageRsrc>(progDir/"data"/"graphics");
-	ResMgr::pushPath<CursorRsrc>(progDir/"data"/"cursors");
-	ResMgr::pushPath<FontRsrc>(progDir/"data"/"fonts");
-	ResMgr::pushPath<StringRsrc>(progDir/"data"/"strings");
-	ResMgr::pushPath<SoundRsrc>(progDir/"data"/"sounds");
+	add_resmgr_paths(progDir/"data");
 	
 	// We need a location for temporary files, primarily for loading and saving operations
 	// The scenario editor may also use this location as "scratch space"
 #if defined(_WIN32) || defined(_WIN64)
 	tempDir = getenv("APPDATA");
 	tempDir /= "Blades of Exile";
-#else
+#elif defined(__APPLE__)
 	tempDir = getenv("HOME");
-#ifdef __APPLE__
 	tempDir /= "Library/Application Support/Blades of Exile";
 #else
-	tempDir /= ".oboe/blades";
-#endif // __APPLE__
-#endif // _Win32||_Win64
+	tempDir = get_posix_tempdir();
+#endif
 	scenDir = tempDir/"Scenarios";
 	fs::create_directories(scenDir);
+	add_resmgr_paths(tempDir/"data");
 	tempDir /= "Temporary Files";
 	
 	// Depending on the build environment, we may need to redirect stdout and stderr.
@@ -78,6 +85,30 @@ void init_directories(const char* exec_path) {
 	std::cout << "Program directory: " << progDir << std::endl;
 	std::cout << "Scenario directory: " << scenDir << std::endl;
 	std::cout << "Temporary directory: " << tempDir << std::endl;
+}
+
+fs::path get_posix_tempdir() {
+
+	fs::path tempdir;
+
+	const char* xdg_config_dir = std::getenv("XDG_CONFIG_HOME");
+
+	if(xdg_config_dir != nullptr) {
+		tempdir = xdg_config_dir;
+	} else {
+		// Default to $HOME/.config
+		const char* home = std::getenv("HOME");
+
+		if(home == nullptr)
+			throw std::runtime_error { "HOME and XDG_CONFIG_HOME env variables not set!" };
+
+		tempdir = home;
+		tempdir /= ".config";
+	}
+
+	tempdir /= "openboe/blades";
+
+	return tempdir;
 }
 
 void check_for_intel() {

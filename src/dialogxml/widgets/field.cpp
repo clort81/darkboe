@@ -69,7 +69,7 @@ void cTextField::setText(std::string to) {
 void cTextField::set_ip(location clickLoc, int cTextField::* insertionPoint) {
 	TextStyle style;
 	style.font = FONT_PLAIN;
-	style.pointSize = 10; // Clort was 11
+	style.pointSize = 12;
 	style.colour = sf::Color::Black;
 	style.lineHeight = 16;
 	size_t foundSnippet = snippets.size();
@@ -226,7 +226,7 @@ void cTextField::draw(){
 	std::string contents = getText();
 	TextStyle style;
 	style.font = FONT_PLAIN;
-	style.pointSize = 10; // Clort was 11
+	style.pointSize = 12;
 	style.colour = sf::Color::Black;
 	style.lineHeight = 16;
 	size_t ip_offset = 0;
@@ -401,7 +401,7 @@ void cTextField::handleInput(cKey key) {
 	key = divineFunction(key);
 	TextStyle style;
 	style.font = FONT_PLAIN;
-	style.pointSize = 10; // Clort was 11;
+	style.pointSize = 12;
 	size_t new_ip;
 	std::string contents = getText();
 	if(current_action && hist_timer.getElapsedTime().asSeconds() > 5.0f)

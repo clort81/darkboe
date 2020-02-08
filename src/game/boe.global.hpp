@@ -26,24 +26,4 @@ struct effect_pat_type {
 	unsigned short pattern[9][9];
 };
 
-// Clort - define some SFML colors for use in various places (boe.text.cpp mainly)
-
-#define CL_VLTBLUE sf::Color(156,186,255,255)
-#define CL_LTBLUE sf::Color(126,146,255,255)
-#define CL_OFFWHITE sf::Color(208,208,208,255)
-#define CL_LTGREY sf::Color(198,198,198,255)
-#define CL_MDGREY sf::Color(178,178,178,255)
-#define CL_DKGREY sf::Color(155,155,155,255)
-#define CL_DKKGREY sf::Color(115,115,115,255)
-#define CL_LTBLACK sf::Color(71,71,71,255)  // To avoid transparency in compositors, we don't do pure blacks
-#define CL_BLACK sf::Color(11,11,11,255)  // To avoid transparency in compositors, we don't do pure blacks
-#define CL_LTYELLOW sf::Color(228,228,18,255)
-#define CL_MELOYELO sf::Color(223,198,58,255)
-#define CL_MELOGREEN sf::Color(58,218,68,255)
-#define CL_MELOMAG sf::Color(233,58,233,255)
-#define CL_MELOCYAN sf::Color(58,233,233,255)
-#define CL_MELORED sf::Color(233,58,38,255)
-#define CL_WARNRED sf::Color(253,58,8,255)
-#define CL_TEMP sf::Color(0,0,198,255)
-
 #endif

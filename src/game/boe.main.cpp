@@ -31,9 +31,9 @@
 #include "prefs.hpp"
 #include "button.hpp"
 #include "enum_map.hpp"
+#include "framerate_limiter.hpp"
 
 bool All_Done = false;
-sf::Event event;
 sf::RenderWindow mainPtr;
 short had_text_freeze = 0,num_fonts;
 bool first_startup_update = true;
@@ -65,7 +65,7 @@ short fast_bang = false; // Note: This mostly behaves as a boolean variable, but
 std::vector<int> spec_item_array;
 short current_spell_range;
 eGameMode overall_mode = MODE_STARTUP;
-bool anim_onscreen = false,changed_display_mode = false;
+bool changed_display_mode = false;
 eItemWinMode stat_window = ITEM_WIN_PC1;
 bool monsters_going = false,boom_anim_active = false;
 bool finished_init = false;
@@ -92,6 +92,7 @@ short missile_firer,current_monst_tactic;
 short store_current_pc = 0;
 
 sf::Clock animTimer;
+extern long anim_ticks;
 
 static void init_boe(int, char*[]);
 
@@ -117,28 +118,9 @@ int main(int argc, char* argv[]) {
 		
 		menu_activate();
 		restore_cursor();
-		// As of year 2020, the game is causing too high CPU load on modern 
-		// CPUs (i7-7700HQ), but due to mistakes in architecture we cannot 
-		// simply use SFML's native framerate capping mechanism 
-		// (setFramerateLimit), so we have to make our own.  
-		// Note that due to the fact that various underlying pieces of code 
-		// redraw, redisplay and pause the game as they see fit, this is not 
-		// exactly framerate capping.
-		//     ~xq
-		sf::Clock framerate_clock;
-		const sf::Int64 desired_microseconds_per_frame { 1000000 / 30}; // us / FPS
-		while(!All_Done) {
-			// If this call indicates that it did something expensive by 
-			// returning true, we do the performance capping. The logic 
-			// here is that we do not want to do expensive things too many 
-			// times per second.
-			//     ~xq
-			if(!Handle_One_Event()) continue;
-			const sf::Int64 remaining_time_budget = desired_microseconds_per_frame - framerate_clock.getElapsedTime().asMicroseconds();
-			if(remaining_time_budget > 0) sf::sleep(sf::microseconds(remaining_time_budget));
-			framerate_clock.restart();
-		}
-		
+
+		handle_events();
+
 		close_program();
 		return 0;
 	} catch(std::exception& x) {
@@ -151,6 +133,7 @@ int main(int argc, char* argv[]) {
 		showFatalError("An unknown error occurred!");
 		throw;
 	}
+exit;
 }
 
 static void init_sbar(std::shared_ptr<cScrollbar>& sbar, rectangle rect, int max, int pgSz, int start = 0) {
@@ -171,7 +154,9 @@ static void init_btn(std::shared_ptr<cButton>& btn, eBtnType type) {
 void init_boe(int argc, char* argv[]) {
 	set_up_apple_events(argc, argv);
 	init_directories(argv[0]);
+#ifdef __APPLE__
 	init_menubar(); // Do this first of all because otherwise a default File and Window menu will be seen
+#endif
 	sync_prefs();
 	init_shaders();
 	init_tiling();
@@ -193,7 +178,7 @@ void init_boe(int argc, char* argv[]) {
 	init_buf();
 	check_for_intel();
 	srand(time(nullptr));
-	init_screen_locs();
+	init_screen_locs();	
 	init_startup();
 	flushingInput = true;
 	// Hidden preference to hide the startup logo - should be kept hidden
@@ -212,51 +197,58 @@ void init_boe(int argc, char* argv[]) {
 	showMenuBar();
 }
 
-// Return true if we redrew the screen
-bool Handle_One_Event() {
-	static const long twentyTicks = time_in_ticks(20).asMilliseconds();
-	static const long fortyTicks = time_in_ticks(40).asMilliseconds();
-	
-	through_sending();
-	
-	if((animTimer.getElapsedTime().asMilliseconds() >= fortyTicks) && (overall_mode != MODE_STARTUP) && (anim_onscreen) && get_bool_pref("DrawTerrainAnimation", true)) {
-		animTimer.restart();
-		draw_terrain();
-	}
-	if((animTimer.getElapsedTime().asMilliseconds() > twentyTicks) && (overall_mode == MODE_STARTUP)) {
-		animTimer.restart();
-		draw_startup_anim(true);
-	}
-	
-	clear_sound_memory();
-	
-	if(map_visible && mini_map.pollEvent(event)){
-		if(event.type == sf::Event::Closed) {
-			mini_map.setVisible(false);
-			map_visible = false;
-		} else if(event.type == sf::Event::GainedFocus)
-			makeFrontWindow(mainPtr);
-	}
-	if(!mainPtr.pollEvent(event)) {
+void handle_events() {
+	sf::Event currentEvent;
+	cFramerateLimiter fps_limiter;
+
+	while(!All_Done) {
+		while(mainPtr.pollEvent(currentEvent)) handle_one_event(currentEvent);
+
+		// It would be nice to have minimap inside the main game window (we have lots of screen space in fullscreen mode).
+		// Alternatively, minimap could live on its own thread.
+		// But for now we just handle events from both windows on this thread.
+		while(map_visible && mini_map.pollEvent(currentEvent)) handle_one_minimap_event(currentEvent);
+
 		if(changed_display_mode) {
 			changed_display_mode = false;
 			adjust_window_mode();
 		}
+
+		// Still no idea what this does. It's possible that this does not work at all.
 		flushingInput = false;
-		redraw_screen(REFRESH_NONE);
-		return true;
+
+		// Ideally this call should update all of the things that are happening in the world current tick.
+		// NOTE that update does not mean draw.
+		update_everything();
+
+		// Ideally, this should be the only draw call that is done in a cycle.
+		redraw_everything();
+
+		// Prevent the loop from executing too fast.
+		fps_limiter.frame_finished();
 	}
+}
+
+void handle_one_event(const sf::Event& event) {
+
+	// What does this do and should it be here?
+	through_sending();
+
+	// What does this do and should it be here?
+	clear_sound_memory();
+
+	// Check if the menubar wants to handle this event.
+	if(menuBarProcessEvent(event)) return;
+
 	switch(event.type) {
 		case sf::Event::KeyPressed:
-			if(flushingInput) return false;
-			if(!(event.key.*systemKey))
-				handle_keystroke(event);
-			
+			if(flushingInput) return;
+			if(!(event.key.*systemKey)) handle_keystroke(event);
 			break;
 			
 		case sf::Event::MouseButtonPressed:
-			if(flushingInput) return false;
-			Mouse_Pressed();
+			if(flushingInput) return;
+			Mouse_Pressed(event);
 			break;
 			
 		case sf::Event::MouseLeft:
@@ -265,19 +257,16 @@ bool Handle_One_Event() {
 			break;
 			
 		case sf::Event::GainedFocus:
-			Handle_Update();
 			makeFrontWindow(mainPtr);
 			change_cursor({event.mouseMove.x, event.mouseMove.y});
-			return true;
+			return;
 
 		case sf::Event::MouseMoved:
-			// Clort not implemented in linux yet? change_cursor({event.mouseMove.x, event.mouseMove.y});
-			flushingInput = false;
-			return false;
+			change_cursor({event.mouseMove.x, event.mouseMove.y});
+			return;
 
-			
 		case sf::Event::MouseWheelMoved:
-			if(flushingInput) return false;
+			if(flushingInput) return;
 			handle_scroll(event);
 			break;
 			
@@ -295,33 +284,69 @@ bool Handle_One_Event() {
 				All_Done = true;
 				break;
 			}
-			if(overall_mode > MODE_TOWN){
-				std::string choice = cChoiceDlog("quit-confirm-nosave", {"quit", "cancel"}).show();
-				if(choice == "cancel")
-					break;
-			}
-			else {
+			if(overall_mode == MODE_TOWN || overall_mode == MODE_OUTDOORS){
 				std::string choice = cChoiceDlog("quit-confirm-save", {"save", "quit", "cancel"}).show();
 				if(choice == "cancel")
 					break;
 				if(choice == "save")
 					save_party(univ.file, univ);
+			} else {
+				std::string choice = cChoiceDlog("quit-confirm-nosave", {"quit", "cancel"}).show();
+				if(choice == "cancel")
+					break;
 			}
 			All_Done = true;
 		default:
 			break; // There's several events we don't need to handle at all
 	}
-	flushingInput = false; // TODO: Could there be a case when the key and mouse input that needs to be flushed has other events interspersed?
-	return true; // Clort seems to work if set to false
 }
 
+void handle_one_minimap_event(const sf::Event& event) {
+	if(event.type == sf::Event::Closed) {
+		mini_map.setVisible(false);
+		map_visible = false;
+	} else if(event.type == sf::Event::GainedFocus) {
+		makeFrontWindow(mainPtr);
+	} else if(event.type == sf::Event::KeyPressed) {
+		switch(event.key.code) {
+			case sf::Keyboard::Escape:
+				mini_map.setVisible(false);
+				map_visible = false;
+				break;
+			default: break;
+		}
+	}
+}
 
-void Handle_Update() {
-	redraw_screen(REFRESH_NONE);
-	
+void update_terrain_animation() {
+	static const long fortyTicks = time_in_ticks(40).asMilliseconds();
+
+	if(overall_mode == MODE_STARTUP) return;
+	if(!get_bool_pref("DrawTerrainAnimation", true)) return;
+	if(animTimer.getElapsedTime().asMilliseconds() < fortyTicks) return;
+
+	anim_ticks++;
+	animTimer.restart();
+}
+
+void update_startup_animation() {
+	static const long twentyTicks = time_in_ticks(20).asMilliseconds();
+
+	if(overall_mode != MODE_STARTUP) return;
+	if(animTimer.getElapsedTime().asMilliseconds() < twentyTicks) return;
+
+	draw_startup_anim(true);
+	animTimer.restart();
+}
+
+void update_everything() {
+	update_terrain_animation();
+	update_startup_animation();
+}
+
+void redraw_everything() {
+	redraw_screen(REFRESH_ALL);
 	if(map_visible) draw_map(false);
-	else mini_map.setVisible(false);
-	
 }
 
 static void handleUpdateWhileScrolling(volatile bool& doneScrolling, int refresh) {
@@ -332,8 +357,9 @@ static void handleUpdateWhileScrolling(volatile bool& doneScrolling, int refresh
 	mainPtr.setActive(false);
 }
 
-// TODO: Pass the event object around instead of keeping a global one
-void Mouse_Pressed() {
+void Mouse_Pressed(sf::Event const & event) {
+
+	// What is this stuff? Why is it here?
 	if(had_text_freeze > 0) {
 		had_text_freeze--;
 		return;
@@ -367,6 +393,7 @@ void Mouse_Pressed() {
 		} else All_Done = handle_action(event);
 	} else All_Done = handle_startup_press({event.mouseButton.x, event.mouseButton.y});
 	
+	// Why does every mouse click activate a menu?
 	menu_activate();
 	
 }
@@ -439,12 +466,7 @@ void handle_menu_choice(eMenu item_hit) {
 				All_Done = true;
 				break;
 			}
-			if(overall_mode > MODE_TOWN) {
-				std::string choice = cChoiceDlog("quit-confirm-nosave",{"quit","cancel"}).show();
-				if(choice == "cancel")
-					return;
-			}
-			else {
+			if(overall_mode == MODE_TOWN || overall_mode == MODE_OUTDOORS) {
 				std::string choice = cChoiceDlog("quit-confirm-save",{"quit","save","cancel"}).show();
 				if(choice == "cancel")
 					break;
@@ -455,6 +477,10 @@ void handle_menu_choice(eMenu item_hit) {
 					}
 					save_party(univ.file, univ);
 				}
+			} else {
+				std::string choice = cChoiceDlog("quit-confirm-nosave",{"quit","cancel"}).show();
+				if(choice == "cancel")
+					return;
 			}
 			All_Done = true;
 			break;
@@ -584,17 +610,13 @@ void handle_menu_choice(eMenu item_hit) {
 			if(!prime_time()) {
 				ASB("Finish what you're doing first.");
 				print_buf();
-			}
-			else {
-				give_help(62,0);
-				display_map();
-			}
+			} else display_map();
 			set_cursor(sword_curs);
 			break;
 		case eMenu::HELP_TOC:
 			if(fs::is_directory(progDir/"doc"))
 				launchURL("file://" + (progDir/"doc/game/Contents.html").string());
-			else launchURL("https://blades.calref.net/doc/game/Contents.html");
+			else launchURL("http://openboe.com/docs/game/Contents.html");
 			break;
 		case eMenu::ABOUT_MAGE:
 		case eMenu::ABOUT_PRIEST:
@@ -681,11 +703,11 @@ void move_sound(ter_num_t ter,short step){
 		on_swamp = true;
 	} else on_swamp = false;
 	
-	if(!monsters_going && (overall_mode < MODE_COMBAT) && (univ.party.in_boat >= 0)) {
+	if(!monsters_going && !is_combat() && (univ.party.in_boat >= 0)) {
 		if(spec == eTerSpec::TOWN_ENTRANCE)
 			return;
 		play_sound(48); //play boat sound
-	} else if(!monsters_going && (overall_mode < MODE_COMBAT) && (univ.party.in_horse >= 0)) {
+	} else if(!monsters_going && !is_combat() && (univ.party.in_horse >= 0)) {
 		play_sound(85); //so play horse sound
 	} else switch(univ.scenario.ter_types[ter].step_sound){
 		case eStepSnd::SQUISH:

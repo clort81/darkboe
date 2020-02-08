@@ -46,8 +46,13 @@ print 'C++ compiler:', env['CXX']
 env.VariantDir('#build/obj', 'src')
 env.VariantDir('#build/obj/test', 'test')
 
+#env.Append(CCFLAGS=['-g','-Og','-pg'])
+#env.Append(CXXFLAGS=['-g','-Og','-pg'])
+#env.Append(LINKFLAGS=['-pg'])
+#env.Append(CCFLAGS=['-march=native', '-mtune=cortex-a57', '-ftree-vectorize', '-funsafe-math-optimizations', '-O3'])
+#env.Append(CCFLAGS=['-march=native', '-mtune=cortex-a57', '-ftree-vectorize', '-funsafe-math-optimizations', '-O2'])
 if env['debug']:
-   env.Append(CCFLAGS=['-g','-o0'])
+   env.Append(CCFLAGS=['-g','-O0'])
 
 # This command generates the header with git revision information
 def gen_gitrev(env, target, source):
@@ -181,7 +186,7 @@ elif platform == "win32":
 	def build_app_package(env, source, build_dir, info):
 		env.Install(build_dir, source)
 elif platform == "posix":
-	env.Append(CXXFLAGS=["-std=c++11","-include","global.hpp"])
+	env.Append(CXXFLAGS=["-std=c++14","-include","global.hpp"])
 	def build_app_package(env, source, build_dir, info):
 		env.Install(build_dir, source)
 
@@ -330,6 +335,7 @@ elif platform == "posix":
 		GL
 		X11
 		pthread
+		tgui
 	"""))
 
 Export("env platform")
@@ -354,7 +360,7 @@ SConscript([
 	"build/obj/game/SConscript",
 	"build/obj/pcedit/SConscript",
 	"build/obj/scenedit/SConscript",
-	"build/obj/test/SConscript"
+#	"build/obj/test/SConscript"
 ])
 
 # Data files

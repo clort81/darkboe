@@ -13,27 +13,30 @@
 
 /* overall mode; some seem to be missing */
 enum eGameMode {
-	MODE_OUTDOORS = 0,
-	MODE_TOWN = 1,
-	MODE_TALK_TOWN = 2, // looking for someone to talk
-	MODE_TOWN_TARGET = 3, // spell target, that is
-	MODE_USE_TOWN = 4,
-	MODE_DROP_TOWN = 5,
-	MODE_BASH_TOWN = 6, // unused
-	MODE_COMBAT = 10,
-	MODE_SPELL_TARGET = 11,
-	MODE_FIRING = 12, // firing from bow or crossbow
-	MODE_THROWING = 13, // throwing missile
-	MODE_FANCY_TARGET = 14, // spell target, that is; I think it's for multitarget spells
-	MODE_DROP_COMBAT = 15,
-	MODE_TALKING = 20,
-	MODE_SHOPPING = 21,
-	MODE_LOOK_OUTDOORS = 35, // looking at something
-	MODE_LOOK_TOWN = 36,
-	MODE_LOOK_COMBAT = 37,
-	MODE_STARTUP = 45,
-	MODE_RESTING = 50,
-	MODE_CUTSCENE = 51, // for future use
+	MODE_OUTDOORS,
+	// Town modes
+	MODE_TOWN,
+	MODE_TALK_TOWN, // looking for someone to talk
+	MODE_TOWN_TARGET, // spell target, that is
+	MODE_USE_TOWN,
+	MODE_DROP_TOWN,
+	MODE_BASH_TOWN, // Bashing down a door
+	MODE_PICK_TOWN, // Picking a lock
+	// Combat modes
+	MODE_COMBAT,
+	MODE_SPELL_TARGET,
+	MODE_FIRING, // firing from bow or crossbow
+	MODE_THROWING, // throwing missile
+	MODE_FANCY_TARGET, // spell target, that is; I think it's for multitarget spells
+	MODE_DROP_COMBAT,
+	// Other modes
+	MODE_TALKING,
+	MODE_SHOPPING,
+	MODE_LOOK_OUTDOORS, // looking at something
+	MODE_LOOK_TOWN,
+	MODE_LOOK_COMBAT,
+	MODE_STARTUP,
+	MODE_RESTING,
 };
 
 static const std::set<eGameMode> scrollableModes = {
@@ -102,12 +105,13 @@ enum eShopArea {
 
 // Item buttons
 enum eItemButton {
-	ITEMBTN_NAME = 0,
-	ITEMBTN_USE = 1,
-	ITEMBTN_GIVE = 2,
-	ITEMBTN_DROP = 3,
-	ITEMBTN_INFO = 4,
-	ITEMBTN_SPEC = 5, // Sell, Identify, or Enchant
+	ITEMBTN_ICON = 0,
+	ITEMBTN_NAME = 1,
+	ITEMBTN_USE = 2,
+	ITEMBTN_GIVE = 3,
+	ITEMBTN_DROP = 4,
+	ITEMBTN_INFO = 5,
+	ITEMBTN_SPEC = 6, // Sell, Identify, or Enchant
 	MAX_eItemButton // keep last
 };
 
@@ -146,5 +150,16 @@ enum eGuiArea {
 	WINRECT_TRANSCRIPT = 5,
 	MAX_eGuiArea // keep last
 };
+
+// height of the menubar in pixels
+const int MENUBAR_HEIGHT = 20;
+
+// amount of player-castable spells
+const int NUM_MAGE_SPELLS = 62;
+const int NUM_PRIEST_SPELLS = 62;
+
+// spell levels
+const int MAGE_SPELL_LEVEL_MAX = 7;
+const int PRIEST_SPELL_LEVEL_MAX = 7;
 
 #endif

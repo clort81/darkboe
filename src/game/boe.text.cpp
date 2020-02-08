@@ -10,6 +10,7 @@ const int TEXT_BUF_LEN = 70;
 #include "universe.hpp"
 #include "boe.text.hpp"
 #include "boe.locutils.hpp"
+#include "boe.infodlg.hpp"
 #include "mathutil.hpp"
 #include "render_text.hpp"
 #include "render_image.hpp"
@@ -20,7 +21,7 @@ const int TEXT_BUF_LEN = 70;
 #include "res_image.hpp"
 #include "res_font.hpp"
 #include "spell.hpp"
-#include "tools/enum_map.hpp"
+#include "enum_map.hpp"
 
 typedef struct {
 	char line[50];
@@ -88,82 +89,72 @@ void put_pc_screen() {
 	rectangle food_rect[2] = {{102,37,113,80}, {102,3,113,40}}; // Clort food right
 	rectangle gold_rect[2] = {{102,106,113,147}, {102,75,113,104}}; // Clort moved
 	rectangle day_rect[2] = {{102,174,113,201}, {102,147,113,172}}; // Clort moved
-	rectangle title_rects[3] = {	{3,3,16,181},  	// Party Title 
-					{3,183,16,214},	// Clort title HP
-					{3,212,16,237}};// Clort title SP
+	rectangle title_rects[3] = {    {3,3,16,181},   // Party Title 
+                                       {3,183,16,214}, // Clort title HP
+                                       {3,212,16,237}};// Clort title SP
 	//rectangle bottom_bar_rect = {99,0,116,271}; // Clort not even used?
+
 	rectangle info_from = {0,1,12,13}, switch_from = {0, 13, 12, 25};
 	
 	pc_stats_gworld.setActive();
 	
 	// First clean up gworld with pretty patterns
-	sf::Texture& orig = *ResMgr::get<ImageRsrc>("statarea");
+	sf::Texture& orig = *ResMgr::graphics.get("statarea");
 	rect_draw_some_item(orig, rectangle(orig), pc_stats_gworld, rectangle(pc_stats_gworld));
 	tileImage(pc_stats_gworld, erase_rect,bg[6]);
 	
 	TextStyle style;
 	style.font = FONT_BOLD;
-	style.pointSize = 11;
-        style.colour = CL_MELOYELO; // Clort 
+	style.pointSize = 10;
+	style.colour = Colours::YELLOW;
 	style.lineHeight = 10;
-
 	win_draw_string(pc_stats_gworld,food_rect[1],"Food:",eTextMode::WRAP,style);
 	win_draw_string(pc_stats_gworld,gold_rect[1],"Gold:",eTextMode::WRAP,style);
 	win_draw_string(pc_stats_gworld,day_rect[1],"Day:",eTextMode::WRAP,style);
 	win_draw_string(pc_stats_gworld,title_rects[0],"Party stats:",eTextMode::WRAP,style);
 	win_draw_string(pc_stats_gworld,title_rects[1],"HP:",eTextMode::WRAP,style);
 	win_draw_string(pc_stats_gworld,title_rects[2],"SP:",eTextMode::WRAP,style);
-	style.colour = CL_OFFWHITE; // Clort
-	style.pointSize = 11;
+	
+	style.colour = Colours::BLACK;
+	style.pointSize = 12;
 	// Put food, gold, day
 	win_draw_string(pc_stats_gworld,food_rect[0],std::to_string(univ.party.food),eTextMode::WRAP,style);
 	win_draw_string(pc_stats_gworld,gold_rect[0],std::to_string(univ.party.gold),eTextMode::WRAP,style);
 	win_draw_string(pc_stats_gworld,day_rect[0],std::to_string(univ.party.calc_day()),eTextMode::WRAP,style);
-        style.colour = CL_TEMP; // Clort
+	style.colour = Colours::BLACK;
 	
-	sf::Texture& invenbtn_gworld = *ResMgr::get<ImageRsrc>("invenbtns");
+	sf::Texture& invenbtn_gworld = *ResMgr::graphics.get("invenbtns");
 	for(short i = 0; i < 6; i++) {
 		if(univ.party[i].main_status != eMainStatus::ABSENT) {
 			for(auto& flag : pc_area_button_active[i])
 				flag = true;
 			if(i == univ.cur_pc) {
 				style.italic = true;
-                                style.colour = CL_LTBLUE; // Clort
+				style.colour = Colours::BLUE;
 			}
-                        else { // Clort makes more sense to else this
-                                style.italic = false;
-                                style.colour = CL_LTGREY; // Clort normal character colors
-                        }
 			
-			to_draw_rect = pc_buttons[i][PCBTN_NAME]; // Clort - to shift
-			to_draw_rect.top -= 4; // Clort - to shift PC name vs pc stats 
-
 			std::ostringstream sout;
-			sout.str("");
 			sout << i + 1 << ". " << univ.party[i].name;
-			win_draw_string(pc_stats_gworld,to_draw_rect,sout.str(),eTextMode::WRAP,style);
-			// Clort style.italic = false;
+			win_draw_string(pc_stats_gworld,pc_buttons[i][PCBTN_NAME],sout.str(),eTextMode::WRAP,style);
 			style.italic = false;
-			// Clort style.colour = sf::Color::Black;
+			style.colour = Colours::BLACK;
 			
-			// Does nothing 
-			//to_draw_rect = pc_buttons[i][PCBTN_HP];
-			//to_draw_rect.right += 20;
-			//to_draw_rect.top += 2; // Clort shift partystats down
+			to_draw_rect = pc_buttons[i][PCBTN_HP];
+			to_draw_rect.right += 20;
 			sout.str("");
 			switch(univ.party[i].main_status) {
 				case eMainStatus::ALIVE:
 					if(univ.party[i].cur_health == univ.party[i].max_health)
-						style.colour = CL_MELOGREEN; // Clort
+						style.colour = Colours::GREEN;
 					else if(univ.party[i].cur_health > univ.party[i].max_health)
-						style.colour = CL_MELOYELO; // Clort was orange
-                                        else style.colour = CL_WARNRED; // Clort
+						style.colour = Colours::ORANGE;
+					else style.colour = Colours::RED;
 					win_draw_string( pc_stats_gworld,pc_buttons[i][PCBTN_HP],std::to_string(univ.party[i].cur_health),eTextMode::WRAP,style);
 					if(univ.party[i].cur_sp == univ.party[i].max_sp)
-                                                style.colour = CL_VLTBLUE; // Clort spell points
+						style.colour = Colours::BLUE;
 					else if(univ.party[i].cur_sp > univ.party[i].max_sp)
-						style.colour = CL_MELOCYAN; // Clort Cyan
-					else style.colour = CL_MELOMAG; // Clort Magenta
+						style.colour = Colours::TEAL;
+					else style.colour = Colours::PINK;
 					win_draw_string( pc_stats_gworld,pc_buttons[i][PCBTN_SP],std::to_string(univ.party[i].cur_sp),eTextMode::WRAP,style);
 					draw_pc_effects(i);
 					break;
@@ -191,11 +182,19 @@ void put_pc_screen() {
 			}
 			if(univ.party[i].main_status != eMainStatus::ALIVE)
 				win_draw_string( pc_stats_gworld,to_draw_rect,sout.str(),eTextMode::WRAP,style);
-                        style.colour = CL_WARNRED; // Clort was black
+			style.colour = Colours::BLACK;
 			
-			// Now put trade and info buttons
-			rect_draw_some_item(invenbtn_gworld,info_from,pc_stats_gworld,pc_buttons[i][PCBTN_INFO],sf::BlendAlpha);
-			rect_draw_some_item(invenbtn_gworld,switch_from,pc_stats_gworld,pc_buttons[i][PCBTN_TRADE],sf::BlendAlpha);
+			// Now put trade and info buttons // CLORT WHAT WHAT
+			to_draw_rect = pc_buttons[i][PCBTN_INFO];
+			to_draw_rect.top += 2;
+			to_draw_rect.bottom += 2;
+			rect_draw_some_item(invenbtn_gworld,  info_from,pc_stats_gworld,to_draw_rect,sf::BlendAlpha);
+			to_draw_rect = pc_buttons[i][PCBTN_TRADE];
+			to_draw_rect.left -= 1; // Clort need this to make arrows fit
+			to_draw_rect.right += 3;
+			to_draw_rect.top += 2;
+			to_draw_rect.bottom += 2;
+			rect_draw_some_item(invenbtn_gworld,switch_from,pc_stats_gworld,to_draw_rect,sf::BlendAlpha);
 		}
 		else {
 			for(auto& flag : pc_area_button_active[i])
@@ -224,16 +223,12 @@ void put_item_screen(eItemWinMode screen_num) {
 	long item_offset;
 	short pc;
 	rectangle erase_rect = {17,2,122,255},dest_rect;
-	//rectangle upper_frame_rect = {3,3,15,268};
-	rectangle upper_frame_rect = {3,3,15,268};  // This jusst moves inven titletext?
-        rectangle upper_frame_recttxt = {3,3,15,268}; 	// Character Inven title text
-						     	// Clort This should be x=4 but
- 							// SFML renders it wrong so ?
+	rectangle upper_frame_rect = {3,3,15,268};
 	
 	item_stats_gworld.setActive();
 	
 	// First clean up gworld with pretty patterns
-	sf::Texture& orig = *ResMgr::get<ImageRsrc>("inventory");
+	sf::Texture& orig = *ResMgr::graphics.get("inventory");
 	rect_draw_some_item(orig, rectangle(orig), item_stats_gworld, rectangle(item_stats_gworld));
 	tileImage(item_stats_gworld, erase_rect,bg[6]);
 	
@@ -245,13 +240,29 @@ void put_item_screen(eItemWinMode screen_num) {
 			flag = false;
 	
 	TextStyle style;
-	style.lineHeight = 11;
+	style.lineHeight = 10;
 	style.font = FONT_BOLD;
-        style.colour = CL_MELOYELO; // Clort
+	style.colour = Colours::YELLOW;
 	switch(screen_num) {
 		case ITEM_WIN_SPECIAL:
 			win_draw_string(item_stats_gworld,upper_frame_rect,"Special items:",eTextMode::WRAP,style);
-			style.colour = CL_LTGREY; // Clort special item color
+			break;
+		case ITEM_WIN_QUESTS:
+			win_draw_string(item_stats_gworld,upper_frame_rect,"Quests/Jobs:",eTextMode::WRAP,style);
+			break;
+			
+		default: // on an items page
+			pc = screen_num;
+			sout.str("");;
+			sout << univ.party[pc].name << " inventory:",
+			win_draw_string(item_stats_gworld,upper_frame_rect,sout.str(),eTextMode::WRAP,style);
+			break;
+	}
+
+	clip_rect(item_stats_gworld, erase_rect);
+	switch(screen_num) {
+		case ITEM_WIN_SPECIAL:
+			style.colour = Colours::BLACK;
 			for(short i = 0; i < 8; i++) {
 				i_num = i + item_offset;
 				if(i_num < spec_item_array.size()) {
@@ -265,14 +276,13 @@ void put_item_screen(eItemWinMode screen_num) {
 			}
 			break;
 		case ITEM_WIN_QUESTS:
-			win_draw_string(item_stats_gworld,upper_frame_rect,"Quests/Jobs:",eTextMode::WRAP,style);
-                        style.colour = CL_MELOMAG; // Clort
+			style.colour = Colours::BLACK;
 			for(short i = 0; i < 8; i++) {
 				i_num = i + item_offset;
 				if(i_num < spec_item_array.size()) {
 					int which_quest = spec_item_array[i_num] % 10000;
 					if(spec_item_array[i_num] / 10000 == 2)
-						style.colour = CL_MELORED; // Clort 
+						style.colour = Colours::RED;
 					
 					win_draw_string(item_stats_gworld,item_buttons[i][ITEMBTN_NAME],univ.scenario.quests[which_quest].name,eTextMode::WRAP,style);
 					
@@ -281,7 +291,7 @@ void put_item_screen(eItemWinMode screen_num) {
 						from = to = item_buttons[i][ITEMBTN_NAME].centre();
 						from.x = item_buttons[i][ITEMBTN_NAME].left;
 						to.x = from.x + string_length(univ.scenario.quests[which_quest].name, style);
-						draw_line(item_stats_gworld, from, to, 1, sf::Color::Green);
+						draw_line(item_stats_gworld, from, to, 1, Colours::GREEN);
 					}
 					
 					place_item_button(3,i,ITEMBTN_INFO);
@@ -290,24 +300,18 @@ void put_item_screen(eItemWinMode screen_num) {
 			break;
 			
 		default: // on an items page
-			pc = screen_num;
-			sout.str("");;
-			sout << univ.party[pc].name << " inventory:",
-                        win_draw_string(item_stats_gworld,upper_frame_recttxt,sout.str(),eTextMode::WRAP,style); 
-                        style.colour = CL_LTBLUE; // Clort First inventory Slot
+			style.colour = Colours::BLACK;
 			
 			for(short i = 0; i < 8; i++) {
 				i_num = i + item_offset;
 				sout.str("");
-				sout << i_num + 1 << '.';
+				sout << i_num + 1 << '.'; // Draw Item Numbers
+				win_draw_string(item_stats_gworld,item_buttons[i][ITEMBTN_NAME],sout.str(),eTextMode::WRAP,style);
 				
  				dest_rect = item_buttons[i][ITEMBTN_NAME];
-				dest_rect.left += 1; 	// Position inven numbers 
-				dest_rect.top -= 2;  	// Position inven numbers 
-				win_draw_string(item_stats_gworld,dest_rect,sout.str(),eTextMode::WRAP,style); // Draw the inventory item numbers - this moved past the dest_rect shift.
+				dest_rect.left += 38; 
+				//dest_rect.top -= 2;  // Clort move item description up
 				
-				dest_rect.left += 35; 	// Position inven description 
-				//dest_rect.top -= 0;   	// Position inven description
 				const cPlayer& who = univ.party[pc];
 				const cItem& item = who.items[i_num];
 				
@@ -316,13 +320,11 @@ void put_item_screen(eItemWinMode screen_num) {
 					if(who.equip[i_num]) {
 						style.italic = true;
 						if(item.variety == eItemType::ONE_HANDED || item.variety == eItemType::TWO_HANDED)
-							style.colour = CL_MELOMAG; // Clort
+							style.colour = Colours::PINK;
 						else if((*item.variety).is_armour)
-							style.colour = CL_MELOGREEN; // Clort
-						else 
-                                                	style.colour = CL_LTBLUE; // Clort
-					} else 
-						style.colour = CL_MDGREY; // Clort unselected weapon color
+							style.colour = Colours::GREEN;
+						else style.colour = Colours::BLUE;
+					} else style.colour = Colours::BLACK;
 					
 					sout.str("");
 					if(!item.ident)
@@ -332,10 +334,10 @@ void put_item_screen(eItemWinMode screen_num) {
 						if(item.charges > 0 && item.ability != eItemAbil::MESSAGE && (stat_screen_mode == MODE_INVEN || stat_screen_mode == MODE_SHOP))
 							sout << '(' << int(item.charges) << ')';
 					}
-					dest_rect.left -= 2;
+					dest_rect.left -= 6; // Clort was 2
 					win_draw_string(item_stats_gworld,dest_rect,sout.str(),eTextMode::WRAP,style);
 					style.italic = false;
-                                        style.colour = CL_OFFWHITE; // Clort inventory numbers
+					style.colour = Colours::BLACK;
 					
 					// this is kludgy, awkwark, and has redundant code. Done this way to
 					// make go faster, and I got lazy.
@@ -366,6 +368,7 @@ void put_item_screen(eItemWinMode screen_num) {
 			} // end of for(short i = 0; i < 8; i++)
 			break;
 	}
+	undo_clip(item_stats_gworld);
 	
 	place_item_bottom_buttons();
 	item_stats_gworld.display();
@@ -429,7 +432,7 @@ void place_buy_button(short position,short pc_num,short item_num) {
 			return;
 	}
 	if(item_area_button_active[position][ITEMBTN_SPEC]) {
-		sf::Texture& invenbtn_gworld = *ResMgr::get<ImageRsrc>("invenbtns");
+		sf::Texture& invenbtn_gworld = *ResMgr::graphics.get("invenbtns");
 		store_selling_values[position] = val_to_place;
 		dest_rect = item_buttons[position][ITEMBTN_SPEC];
 		dest_rect.right = dest_rect.left + 30;
@@ -447,20 +450,19 @@ void place_item_graphic(short which_slot,short graphic) {
 	rectangle from_rect = {0,0,18,18},to_rect;
 	
 	item_area_button_active[which_slot][ITEMBTN_NAME] = item_area_button_active[which_slot][ITEMBTN_ICON] = true;
-
 	from_rect.offset((graphic % 10) * 18,(graphic / 10) * 18);
 	to_rect = item_buttons[which_slot][ITEMBTN_ICON];
+	to_rect.left -= 4; 	// Clort shift inven item btns left a bit
+	to_rect.right -= 4; 	// Clort shift inven item btns left a bit
 	std::shared_ptr<const sf::Texture> src_gw;
 	if(graphic >= 10000) {
-		sf::Texture* src_gw;
 		graf_pos_ref(src_gw, from_rect) = spec_scen_g.find_graphic(graphic - 10000, true);
 		rect_draw_some_item(*src_gw, from_rect, item_stats_gworld, to_rect,sf::BlendAlpha);
 	} else if(graphic >= 1000) {
-		sf::Texture* src_gw;
 		graf_pos_ref(src_gw, from_rect) = spec_scen_g.find_graphic(graphic - 1000);
 		rect_draw_some_item(*src_gw, from_rect, item_stats_gworld, to_rect,sf::BlendAlpha);
 	}
-	else rect_draw_some_item(*ResMgr::get<ImageRsrc>("tinyobj"), from_rect, item_stats_gworld, to_rect, sf::BlendAlpha);
+	else rect_draw_some_item(*ResMgr::graphics.get("tinyobj"), from_rect, item_stats_gworld, to_rect, sf::BlendAlpha);
 }
 
 // name, use, give, drop, info, sell/id
@@ -469,7 +471,7 @@ void place_item_graphic(short which_slot,short graphic) {
 void place_item_button(short button_position,short which_slot,eItemButton button_type) {
 	rectangle from_rect = {0,0,18,18},to_rect;
 	
-	sf::Texture& invenbtn_gworld = *ResMgr::get<ImageRsrc>("invenbtns");
+	sf::Texture& invenbtn_gworld = *ResMgr::graphics.get("invenbtns");
 	switch(button_position) {
 	default: // this means put a regular item button
 		item_area_button_active[which_slot][button_type] = true;
@@ -505,18 +507,18 @@ void place_item_bottom_buttons() {
 	// TODO: What about when the buttons are pressed?
 	TextStyle style;
 	style.lineHeight = 10;
-	style.pointSize = 11;
+	style.pointSize = 12;
 	style.font = FONT_BOLD;
-        style.colour = CL_MELOYELO; // Clort 
+	style.colour = Colours::YELLOW;
 	
-	sf::Texture& invenbtn_gworld = *ResMgr::get<ImageRsrc>("invenbtns");
+	sf::Texture& invenbtn_gworld = *ResMgr::graphics.get("invenbtns");
 	for(short i = 0; i < 6; i++) {
 		if(univ.party[i].main_status == eMainStatus::ALIVE) {
 		 	item_bottom_button_active[i] = true;
 		 	to_rect = item_screen_button_rects[i];
-			rect_draw_some_item(invenbtn_gworld, but_from_rect, item_stats_gworld, to_rect, sf::BlendAlpha); // Draw the buttons behind small PC graphic
+			rect_draw_some_item(invenbtn_gworld, but_from_rect, item_stats_gworld, to_rect, sf::BlendAlpha);
 			pic_num_t pic = univ.party[i].which_graphic;
-			sf::Texture* from_gw;
+			std::shared_ptr<const sf::Texture> from_gw;
 			if(pic >= 1000) {
 				bool isParty = pic >= 10000;
 				pic_num_t need_pic = pic % 1000;
@@ -528,21 +530,19 @@ void place_item_bottom_buttons() {
 				int mode = 0;
 				pc_from_rect = get_monster_template_rect(need_pic, mode, 0);
 				int which_sheet = m_pic_index[need_pic].i / 20;
-				from_gw = ResMgr::get<ImageRsrc>("monst" + std::to_string(1 + which_sheet)).get();
+				from_gw = &ResMgr::graphics.get("monst" + std::to_string(1 + which_sheet));
 			} else {
 				pc_from_rect = calc_rect(2 * (pic / 8), pic % 8);
-				from_gw = ResMgr::get<ImageRsrc>("pcs").get();
+				from_gw = &ResMgr::graphics.get("pcs");
 			}
-			to_rect.inset(2,2); // Clort this affects PC width
-			rect_draw_some_item(*from_gw, pc_from_rect, item_stats_gworld, to_rect, sf::BlendAlpha); // Draw the little PCs
+			to_rect.inset(2,2);
+			rect_draw_some_item(*from_gw, pc_from_rect, item_stats_gworld, to_rect, sf::BlendAlpha);
 			std::string numeral = std::to_string(i + 1);
 			short width = string_length(numeral, style);
-			// Clort these Y-offsets are not needed for bitmapped font
 			// Offset "6" down two pixels to make it line up, because it has an ascender in this font
-			// Offset "1" - "4" down as well because they're not shorter and it looks a bit better
-			//to_rect.offset(-width - 5, i != 4 ? 2 : 0);
+			// Clort was: to_rect.offset(-width - 5, i != 4 ? 2 : 0);
 			to_rect.left -= (i==0 ? 10 : 12);
-			win_draw_string(item_stats_gworld, to_rect, numeral, eTextMode::LEFT_TOP, style); // Clort draw the numbers left of PC buttons
+			win_draw_string(item_stats_gworld, to_rect, numeral, eTextMode::LEFT_TOP, style);
 		}
 		else item_bottom_button_active[i] = false;
 	}
@@ -561,6 +561,9 @@ void set_stat_window_for_pc(int pc) {
 }
 
 void set_stat_window(eItemWinMode new_stat) {
+	if(new_stat == ITEM_WIN_SPECIAL)
+		give_help(50,0);
+	
 	short array_pos = 0;
 	
 	stat_window = new_stat;
@@ -637,16 +640,16 @@ void draw_pc_effects(short pc) {
 	TextStyle style;
 	name_width = string_length(univ.party[pc].name, style);
 	right_limit = pc_buttons[0][PCBTN_HP].left - 5;
-	dest_rect.left = name_width + 33;
+	dest_rect.left = name_width + 26; // Clort smaller font shifts effects left
 	dest_rect.right = dest_rect.left + 12;
-	dest_rect.top += pc * 13;
-	dest_rect.bottom += pc * 13;
+	dest_rect.top += 1 + (pc * 13); // Clort Shift down one pixel
+	dest_rect.bottom += 1 + (pc * 13); // Clort Shift down one pixel
 	
 	if(exceptSplit(univ.party[pc].main_status) != eMainStatus::ALIVE)
 		return;
 	
 	univ.party[pc].status[eStatus::HASTE_SLOW]; // This just makes sure it exists in the map, without changing its value if it does
-	sf::Texture& status_gworld = *ResMgr::get<ImageRsrc>("staticons");
+	sf::Texture& status_gworld = *ResMgr::graphics.get("staticons");
 	for(auto next : univ.party[pc].status) {
 		short placedIcon = -1;
 		if(next.first == eStatus::POISON && next.second > 4) placedIcon = 1;
@@ -951,7 +954,7 @@ void add_string_to_buf(std::string str, unsigned short indent) {
 	if(!inited) {
 		inited = true;
 		buf_style.font = FONT_PLAIN;
-		buf_style.pointSize = 11;
+		buf_style.pointSize = 12;
 		width = text_area_gworld.getSize().x - 5;
 	}
 	if(overall_mode == MODE_STARTUP)
@@ -1076,9 +1079,9 @@ void print_buf () {
 	location moveTo;
 	while((line_to_print!= buf_pointer) && (num_lines_printed < LINES_IN_TEXT_WIN)) {
 		moveTo = location(4, 1 + 12 * num_lines_printed);
-		// Clort baad original sf::Text text(text_buffer[line_to_print].line, *ResMgr::get<FontRsrc>("plain"), 11);
-                sf::Text text(text_buffer[line_to_print].line, *ResMgr::get<FontRsrc>("ClortSans-11.bdf"), 11); //Clort load bdf font instead of 'plain'
-                text.setColor(CL_LTGREY); // Clort console color (dep function FIXME)
+		//sf::Text text(text_buffer[line_to_print].line, *ResMgr::fonts.get("plain"), 12);
+                sf::Text text(text_buffer[line_to_print].line, *ResMgr::fonts.get("ClortSans-11"), 11); //Clort load bdf font instead of 'plain'
+		text.setColor(Colours::BLACK);
 		text.setPosition(moveTo);
 		text_area_gworld.draw(text);
 		num_lines_printed++;
@@ -1115,7 +1118,7 @@ void through_sending() {
 
 /* Draw a bitmap in the world window. hor in 0 .. 8, vert in 0 .. 8,
  object is ptr. to bitmap to be drawn, and masking is for Copybits. */
-void Draw_Some_Item (sf::Texture& src_gworld, rectangle src_rect, sf::RenderTarget& targ_gworld,location target, char masked, short main_win) {
+void Draw_Some_Item(const sf::Texture& src_gworld, rectangle src_rect, sf::RenderTarget& targ_gworld,location target, char masked, short main_win) {
 	rectangle	destrec = {0,0,36,28};
 	
 	if((target.x < 0) || (target.y < 0) || (target.x > 8) || (target.y > 8))
@@ -1167,7 +1170,7 @@ void draw_text_label(const text_label_t& label) {
 	sf::Color back_clr = {64, 64, 64, 42};
 	TextStyle style;
 	style.font = FONT_PLAIN;
-	style.colour = CL_OFFWHITE; // Clort
+	style.colour = Colours::WHITE;
 	rectangle back_rect = label.text_rect, text_rect = label.text_rect;
 	back_rect.inset(-7,-7);
 	back_rect.offset(0,-2);

@@ -4,6 +4,7 @@
 #include "pc.graphics.hpp"
 #include "pc.editors.hpp"
 #include "pc.action.hpp"
+#include "pc.menus.hpp"
 #include "sounds.hpp"
 #include "gfxsheets.hpp"
 #include "render_shapes.hpp"
@@ -18,6 +19,7 @@
 extern cUniverse univ;
 
 extern sf::RenderWindow mainPtr;
+extern sf::View mainView;
 extern bool party_in_scen,scen_items_loaded;
 extern fs::path file_in_mem;
 
@@ -186,13 +188,13 @@ void init_main_buttons() {
 
 void Set_up_win () {
 	// Preload the main PC editor interface images
-	ResMgr::get<ImageRsrc>("pcedtitle");
-	ResMgr::get<ImageRsrc>("icon");
-	ResMgr::get<ImageRsrc>("invenbtns");
-	ResMgr::get<ImageRsrc>("staticons");
-	ResMgr::get<ImageRsrc>("dlogpics");
-	ResMgr::get<ImageRsrc>("pcedbuttons");
-	ResMgr::get<ImageRsrc>("pcs");
+	ResMgr::graphics.get("pcedtitle");
+	ResMgr::graphics.get("icon");
+	ResMgr::graphics.get("invenbtns");
+	ResMgr::graphics.get("staticons");
+	ResMgr::graphics.get("dlogpics");
+	ResMgr::graphics.get("pcedbuttons");
+	ResMgr::graphics.get("pcs");
 }
 
 static void draw_main_screen();
@@ -203,6 +205,9 @@ void redraw_screen() {
 	draw_main_screen();
 	display_party();
 	draw_items();
+	
+	drawMenuBar();
+	
 	mainPtr.display();
 }
 
@@ -226,14 +231,20 @@ void draw_main_screen() {
 	rectangle source_rect,dest_rec,dest_rect;
 	rectangle reg_rect;
 	
-	tileImage(mainPtr,whole_win_rect,bg[12]); // fill whole window with background texture
+	// fill whole window with background texture
+	// Switch back to the default view while drawing the background tiles
+	// so that they are not upscaled
+	rectangle windRect { mainPtr };
+	mainPtr.setView(mainPtr.getDefaultView());
+	tileImage(mainPtr,windRect,bg[12]);
+	mainPtr.setView(mainView);
 	
-	sf::Texture& icon_gworld = *ResMgr::get<ImageRsrc>("icon");
+	sf::Texture& icon_gworld = *ResMgr::graphics.get("icon");
 	dest_rec = source_rect = rectangle(icon_gworld);
 	dest_rec.offset(23, 16);
 	rect_draw_some_item(icon_gworld,source_rect,mainPtr,dest_rec);
 	
-	sf::Texture& title_gworld = *ResMgr::get<ImageRsrc>("pcedtitle");
+	sf::Texture& title_gworld = *ResMgr::graphics.get("pcedtitle");
 	dest_rec = source_rect = rectangle(title_gworld);
 	dest_rec.offset(66, 0);
 	rect_draw_some_item(title_gworld,source_rect,mainPtr,dest_rec,sf::BlendAlpha);
@@ -331,7 +342,7 @@ void draw_items() {
 		frame_dlog_rect(mainPtr,name_rect); // draw the frame
 		return; // If PC is dead, it has no items
 	}
-	sf::Texture& invenbtn_gworld = *ResMgr::get<ImageRsrc>("invenbtns");
+	sf::Texture& invenbtn_gworld = *ResMgr::graphics.get("invenbtns");
 	for(short i = 0; i < univ.party[current_active_pc].items.size(); i++) // Loop through items and draw each
 		if(univ.party[current_active_pc].items[i].variety != eItemType::NO_ITEM) { // i.e. does item exist
 			std::string to_draw = std::to_string(i + 1) + ". ";
@@ -373,7 +384,7 @@ void display_party() {
 		win_draw_string(mainPtr,no_party_rect,"No party loaded.",eTextMode::WRAP,style);
 	}
 	else {
-		sf::Texture& buttons_gworld = *ResMgr::get<ImageRsrc>("pcedbuttons");
+		sf::Texture& buttons_gworld = *ResMgr::graphics.get("pcedbuttons");
 		from_rect = pc_info_rect;
 		from_rect.top = from_rect.bottom - 11;
 		if(!party_in_scen)
@@ -382,7 +393,7 @@ void display_party() {
 			win_draw_string(mainPtr,from_rect,"Party is in a scenario (day " + std::to_string(1 + univ.party.age / 3700) + ").",eTextMode::WRAP,style);
 		for(short i = 0; i < 6; i++) {
 			if(i == current_active_pc) // active pc is drawn in blue
-				fill_rect(mainPtr, pc_area_buttons[i][0], sf::Color::Blue);
+				fill_rect(mainPtr, pc_area_buttons[i][0], Colours::BLUE);
 			else fill_rect(mainPtr, pc_area_buttons[i][0], sf::Color::Black);
 			
 			from_rect = (current_pressed_button == i) ? ed_buttons_from[1] : ed_buttons_from[0];
@@ -392,7 +403,7 @@ void display_party() {
 			if(univ.party[i].main_status != eMainStatus::ABSENT) { // PC exists?
 				// draw PC graphic
 				pic_num_t pic = univ.party[i].which_graphic;
-				sf::Texture* from_gw;
+				std::shared_ptr<const sf::Texture> from_gw;
 				if(pic >= 1000) {
 					bool isParty = pic >= 10000;
 					pic_num_t need_pic = pic % 1000;
@@ -404,10 +415,10 @@ void display_party() {
 					pic_num_t picture_wanted = m_pic_index[need_pic].i % 20;
 					from_rect = calc_rect(2 * (picture_wanted / 10), picture_wanted % 10);
 					int which_sheet = m_pic_index[need_pic].i / 20;
-					from_gw = ResMgr::get<ImageRsrc>("monst" + std::to_string(1 + which_sheet)).get();
+					from_gw = &ResMgr::graphics.get("monst" + std::to_string(1 + which_sheet));
 				} else {
 					from_rect = calc_rect(2 * (pic / 8), pic % 8);
-					from_gw = ResMgr::get<ImageRsrc>("pcs").get();
+					from_gw = &ResMgr::graphics.get("pcs");
 				}
 				rect_draw_some_item(*from_gw,from_rect,mainPtr,pc_area_buttons[i][1],sf::BlendAlpha);
 				
@@ -791,4 +802,9 @@ void display_party() {
 		to_draw << " Food: " << univ.party.food;
 		win_draw_string(mainPtr,dest_rect,to_draw.str(),eTextMode::WRAP,style);
 	}
+}
+
+// Translate mouse event coordinates based on the global view and viewport
+sf::Vector2f translate_mouse_coordinates(sf::Vector2i const point) {
+	return mainPtr.mapPixelToCoords(point, mainView);
 }

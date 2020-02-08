@@ -22,6 +22,7 @@
 #include "mathutil.hpp"
 #include "cursors.hpp"
 #include "prefs.hpp"
+#include "framerate_limiter.hpp"
 
 using namespace std;
 using namespace ticpp;
@@ -386,6 +387,8 @@ void cDialog::run(std::function<void(cDialog&)> onopen){
 	cDialog* formerTop = topWindow;
 	// TODO: The introduction of the static topWindow means I may be able to use this instead of parent->win; do I still need parent?
 	sf::RenderWindow* parentWin = &(parent ? parent->win : mainPtr);
+	auto parentPos = parentWin->getPosition();
+	auto parentSz = parentWin->getSize();
 	cursor_type former_curs = Cursor::current;
 	dialogNotToast = true;
 	set_cursor(sword_curs);
@@ -408,6 +411,7 @@ void cDialog::run(std::function<void(cDialog&)> onopen){
 	win.create(sf::VideoMode(1,1),"");
 	win.close();
 	win.create(sf::VideoMode(winRect.width(), winRect.height()), "Dialog", sf::Style::Titlebar);
+	win.setPosition({parentPos.x + int(parentSz.x - winRect.width()) / 2, parentPos.y + int(parentSz.y - winRect.height()) / 2});
 	draw();
 	makeFrontWindow(parent ? parent-> win : mainPtr);
 	makeFrontWindow(win);
@@ -430,9 +434,7 @@ void cDialog::run(std::function<void(cDialog&)> onopen){
 // This method is a main event event loop of the dialog.
 void cDialog::handle_events() {
 	sf::Event currentEvent;
-
-	sf::Clock framerate_clock;
-	const sf::Int64 desired_microseconds_per_frame { 1000000 / 60 }; // us / FPS
+	cFramerateLimiter fps_limiter;
 
 	while(dialogNotToast) {
 		while(win.pollEvent(currentEvent)) handle_one_event(currentEvent);
@@ -441,9 +443,7 @@ void cDialog::handle_events() {
 		draw();
 
 		// Prevent the loop from executing too fast.
-		const sf::Int64 remaining_time_budget = desired_microseconds_per_frame - framerate_clock.getElapsedTime().asMicroseconds();
-		if(remaining_time_budget > 0) sf::sleep(sf::microseconds(remaining_time_budget));
-		framerate_clock.restart();
+		fps_limiter.frame_finished();
 	}
 }
 

@@ -27,7 +27,6 @@ extern short stat_window;
 extern bool cartoon_happening;
 extern eGameMode overall_mode;
 extern short current_spell_range;
-extern bool anim_onscreen;
 extern cUniverse univ;
 extern effect_pat_type current_pat;
 extern sf::RenderWindow mini_map;
@@ -38,7 +37,7 @@ extern std::queue<pending_special_type> special_queue;
 
 extern location center;
 extern short which_combat_type;
-extern bool monsters_going,anim_onscreen;
+extern bool monsters_going;
 
 extern short num_targets_left;
 extern location spell_targets[8];
@@ -62,7 +61,7 @@ bool gave_no_g_error = false;
 void draw_one_terrain_spot (short i,short j,short terrain_to_draw) {
 	rectangle where_draw;
 	rectangle source_rect;
-	sf::Texture* source_gworld;
+	std::shared_ptr<const sf::Texture> source_gworld;
 	short anim_type = 0;
 	location l;
 	
@@ -80,7 +79,7 @@ void draw_one_terrain_spot (short i,short j,short terrain_to_draw) {
 	if(terrain_to_draw >= 10000) { // force using a specific graphic
 		terrain_to_draw -= 10000;
 		int which_sheet = terrain_to_draw / 50;
-		source_gworld = ResMgr::get<ImageRsrc>("ter" + std::to_string(1 + which_sheet)).get();
+		source_gworld = &ResMgr::graphics.get("ter" + std::to_string(1 + which_sheet));
 		terrain_to_draw %= 50;
 		source_rect = calc_rect(terrain_to_draw % 10, terrain_to_draw / 10);
 		anim_type = -1;
@@ -93,7 +92,7 @@ void draw_one_terrain_spot (short i,short j,short terrain_to_draw) {
 		graf_pos_ref(source_gworld, source_rect) = spec_scen_g.find_graphic(univ.scenario.ter_types[terrain_to_draw].picture - 1000);
 	}
 	else if(univ.scenario.ter_types[terrain_to_draw].picture >= 960) { // animated
-		source_gworld = ResMgr::get<ImageRsrc>("teranim").get();
+		source_gworld = &ResMgr::graphics.get("teranim");
 		terrain_to_draw = univ.scenario.ter_types[terrain_to_draw].picture;
 		source_rect = calc_rect(4 * ((terrain_to_draw - 960) / 5) + (anim_ticks % 4),(terrain_to_draw - 960) % 5);
 		anim_type = 0;
@@ -101,15 +100,10 @@ void draw_one_terrain_spot (short i,short j,short terrain_to_draw) {
 	else {
 		terrain_to_draw = univ.scenario.ter_types[terrain_to_draw].picture;
 		int which_sheet = terrain_to_draw / 50;
-		source_gworld = ResMgr::get<ImageRsrc>("ter" + std::to_string(1 + which_sheet)).get();
+		source_gworld = &ResMgr::graphics.get("ter" + std::to_string(1 + which_sheet));
 		terrain_to_draw %= 50;
 		source_rect = calc_rect(terrain_to_draw % 10, terrain_to_draw / 10);
 		anim_type = -1;
-	}
-	
-	if(anim_type >= 0) {
-		if((is_town()) || (is_out()))
-			anim_onscreen = true;
 	}
 	
 	rect_draw_some_item(*source_gworld, source_rect, terrain_screen_gworld, where_draw);
@@ -146,7 +140,7 @@ void draw_monsters() {
 					if(picture_wanted >= 0) {
 						if(picture_wanted >= 1000) {
 							for(short k = 0; k < width * height; k++) {
-								sf::Texture* src_gw;
+								std::shared_ptr<const sf::Texture> src_gw;
 								graf_pos_ref(src_gw, source_rect) = spec_scen_g.find_graphic(picture_wanted % 1000 +
 																							 ((enc.direction < 4) ? 0 : (width * height)) + k);
 								to_rect = monst_rects[(width - 1) * 2 + height - 1][k];
@@ -160,7 +154,7 @@ void draw_monsters() {
 								to_rect = monst_rects[(width - 1) * 2 + height - 1][k];
 								to_rect.offset(13 + 28 * where_draw.x,13 + 36 * where_draw.y);
 								int which_sheet = m_pic_index[picture_wanted].i / 20;
-								sf::Texture& monst_gworld = *ResMgr::get<ImageRsrc>("monst" + std::to_string(1 + which_sheet));
+								sf::Texture& monst_gworld = *ResMgr::graphics.get("monst" + std::to_string(1 + which_sheet));
 								rect_draw_some_item(monst_gworld, source_rect, terrain_screen_gworld,to_rect, sf::BlendAlpha);
 							}
 						}
@@ -189,7 +183,7 @@ void draw_monsters() {
 							draw_one_terrain_spot((short) where_draw.x,(short) where_draw.y,10000 + univ.scenario.ter_types[ter].flag1);
 						else if(monst.picture_num >= 1000) {
 							bool isParty = monst.picture_num >= 10000;
-							sf::Texture* src_gw;
+							std::shared_ptr<const sf::Texture> src_gw;
 							pic_num_t need_pic = (monst.picture_num % 1000) + k;
 							if(monst.direction >= 4) need_pic += width * height;
 							if(combat_posing_monster == i + 100) need_pic += (2 * width * height);
@@ -201,7 +195,7 @@ void draw_monsters() {
 							pic_mode += (combat_posing_monster == i + 100) ? 10 : 0;
 							source_rect = get_monster_template_rect(this_monst, pic_mode, k);
 							int which_sheet = m_pic_index[this_monst].i / 20;
-							sf::Texture& monst_gworld = *ResMgr::get<ImageRsrc>("monst" + std::to_string(1 + which_sheet));
+							sf::Texture& monst_gworld = *ResMgr::graphics.get("monst" + std::to_string(1 + which_sheet));
 							Draw_Some_Item(monst_gworld, source_rect, terrain_screen_gworld, store_loc, 1, 0);
 						}
 					}
@@ -218,7 +212,7 @@ void play_see_monster_str(unsigned short m, location monst_loc) {
 	spec = univ.scenario.scen_monsters[m].see_spec;
 	// Then run the special, if any
 	if(spec > -1){
-		queue_special(eSpecCtx::SEE_MONST, 0, spec, monst_loc);
+		queue_special(eSpecCtx::SEE_MONST, eSpecCtxType::SCEN, spec, monst_loc);
 	}
 }
 
@@ -228,7 +222,7 @@ void draw_combat_pc(cPlayer& who, location center, bool attacking) {
 		if(point_onscreen(center, who.combat_pos) && (cartoon_happening || party_can_see(who.combat_pos) < 6)) {
 			location where_draw(who.combat_pos.x - center.x + 4, who.combat_pos.y - center.y + 4);
 			rectangle source_rect;
-			sf::Texture* from_gw;
+			std::shared_ptr<const sf::Texture> from_gw;
 			pic_num_t pic = who.which_graphic;
 			if(pic >= 1000) {
 				bool isParty = pic >= 10000;
@@ -249,14 +243,14 @@ void draw_combat_pc(cPlayer& who, location center, bool attacking) {
 					mode += 10;
 				source_rect = get_monster_template_rect(need_pic, mode, 0);
 				int which_sheet = m_pic_index[need_pic].i / 20;
-				from_gw = ResMgr::get<ImageRsrc>("monst" + std::to_string(1 + which_sheet)).get();
+				from_gw = &ResMgr::graphics.get("monst" + std::to_string(1 + which_sheet));
 			} else {
 				source_rect = calc_rect(2 * (pic / 8), pic % 8);
 				if(who.direction >= 4)
 					source_rect.offset(28,0);
 				if(attacking)
 					source_rect.offset(0,288);
-				from_gw = ResMgr::get<ImageRsrc>("pcs").get();
+				from_gw = &ResMgr::graphics.get("pcs");
 			}
 			
 			Draw_Some_Item(*from_gw, source_rect, terrain_screen_gworld, where_draw, 1, 0);
@@ -274,7 +268,7 @@ void frame_active_pc(location center) {
 	active_pc_rect.right = 46 + where_draw.x * 28;
 	active_pc_rect.offset(14,2);
 	
-	frame_roundrect(mainPtr, active_pc_rect, 8, sf::Color::Magenta);
+	frame_roundrect(mainPtr, active_pc_rect, 8, Colours::PINK);
 }
 
 void draw_pcs(location center) {
@@ -303,7 +297,7 @@ void draw_items(location where){
 		if(univ.town.items[i].variety != eItemType::NO_ITEM && univ.town.items[i].item_loc == where) {
 			if(univ.town.items[i].contained) continue;
 			if(party_can_see(where) >= 6) continue;
-			sf::Texture* src_gw;
+			std::shared_ptr<const sf::Texture> src_gw;
 			to_rect = coord_to_rect(where_draw.x,where_draw.y);
 			if(univ.town.items[i].graphic_num >= 10000){
 				graf_pos_ref(src_gw, from_rect) = spec_scen_g.find_graphic(univ.town.items[i].graphic_num - 10000, true);
@@ -318,7 +312,7 @@ void draw_items(location where){
 void draw_outd_boats(location center) {
 	location where_draw;
 	rectangle source_rect;
-	sf::Texture& vehicle_gworld = *ResMgr::get<ImageRsrc>("vehicle");
+	sf::Texture& vehicle_gworld = *ResMgr::graphics.get("vehicle");
 	
 	for(auto& boat : univ.party.boats) {
 		if(!boat.exists) continue;
@@ -347,7 +341,7 @@ void draw_outd_boats(location center) {
 void draw_town_boat(location center) {
 	location where_draw;
 	rectangle source_rect;
-	sf::Texture& vehicle_gworld = *ResMgr::get<ImageRsrc>("vehicle");
+	sf::Texture& vehicle_gworld = *ResMgr::graphics.get("vehicle");
 	
 	for(auto& boat : univ.party.boats) {
 		if(!boat.exists) continue;
@@ -377,7 +371,7 @@ void draw_fields(location where){
 	if(!point_onscreen(center,where)) return;
 	if(party_can_see(where) >= 6) return;
 	location where_draw(4 + where.x - center.x, 4 + where.y - center.y);
-	sf::Texture& fields_gworld = *ResMgr::get<ImageRsrc>("fields");
+	sf::Texture& fields_gworld = *ResMgr::graphics.get("fields");
 	if(is_out()){
 		if(univ.out.is_spot(where.x,where.y))
 			Draw_Some_Item(fields_gworld,calc_rect(4,0),terrain_screen_gworld,where_draw,1,0);
@@ -408,7 +402,7 @@ void draw_fields(location where){
 	if(univ.town.is_barrel(where.x,where.y))
 		Draw_Some_Item(fields_gworld,calc_rect(7,0),terrain_screen_gworld,where_draw,1,0);
 	if(univ.town.is_fire_barr(where.x,where.y) || univ.town.is_force_barr(where.x,where.y))
-		Draw_Some_Item(*ResMgr::get<ImageRsrc>("teranim"),calc_rect(8+(anim_ticks%4),4),terrain_screen_gworld,where_draw,1,0);
+		Draw_Some_Item(*ResMgr::graphics.get("teranim"),calc_rect(8+(anim_ticks%4),4),terrain_screen_gworld,where_draw,1,0);
 	if(univ.town.is_quickfire(where.x,where.y))
 		Draw_Some_Item(fields_gworld,calc_rect(7,1),terrain_screen_gworld,where_draw,1,0);
 	if(univ.town.is_sm_blood(where.x,where.y))
@@ -451,7 +445,7 @@ void draw_party_symbol(location center) {
 	
 	if((univ.party.in_boat < 0) && (univ.party.in_horse < 0)) {
 		i = first_active_pc();
-		sf::Texture* from_gw;
+		std::shared_ptr<const sf::Texture> from_gw;
 		pic_num_t pic = univ.party[i].which_graphic;
 		if(pic >= 1000) {
 			bool isParty = pic >= 10000;
@@ -468,12 +462,12 @@ void draw_party_symbol(location center) {
 				mode++;
 			source_rect = get_monster_template_rect(need_pic, mode, 0);
 			int which_sheet = m_pic_index[need_pic].i / 20;
-			from_gw = ResMgr::get<ImageRsrc>("monst" + std::to_string(1 + which_sheet)).get();
+			from_gw = &ResMgr::graphics.get("monst" + std::to_string(1 + which_sheet));
 		} else {
 			source_rect = calc_rect(2 * (pic / 8), pic % 8);
 			if(univ.party.direction >= 4)
 				source_rect.offset(28,0);
-			from_gw = ResMgr::get<ImageRsrc>("pcs").get();
+			from_gw = &ResMgr::graphics.get("pcs");
 		}
 		ter_num_t ter = 0;
 		if(is_out())
@@ -489,10 +483,10 @@ void draw_party_symbol(location center) {
 		if(univ.party.direction == DIR_N) i = 2;
 		else if(univ.party.direction == DIR_S) i = 3;
 		else i = univ.party.direction > DIR_S;
-		Draw_Some_Item(*ResMgr::get<ImageRsrc>("vehicle"), calc_rect(i,0), terrain_screen_gworld, target, 1, 0);
+		Draw_Some_Item(*ResMgr::graphics.get("vehicle"), calc_rect(i,0), terrain_screen_gworld, target, 1, 0);
 	}else {
 		i = univ.party.direction > 3;
-		Draw_Some_Item(*ResMgr::get<ImageRsrc>("vehicle"), calc_rect(i + 2, 1), terrain_screen_gworld, target, 1, 0);
+		Draw_Some_Item(*ResMgr::graphics.get("vehicle"), calc_rect(i + 2, 1), terrain_screen_gworld, target, 1, 0);
 	}
 }
 

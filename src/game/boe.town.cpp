@@ -20,6 +20,7 @@
 #include "boe.locutils.hpp"
 #include "boe.specials.hpp"
 #include "boe.infodlg.hpp"
+#include "boe.ui.hpp"
 #include "mathutil.hpp"
 #include "render_image.hpp"
 #include "render_shapes.hpp"
@@ -28,6 +29,7 @@
 #include "strdlog.hpp"
 #include "winutil.hpp"
 #include "res_image.hpp"
+#include "cursors.hpp"
 
 extern short store_spell_target,which_combat_type,combat_active_pc;
 extern eGameMode overall_mode;
@@ -582,7 +584,7 @@ location end_town_mode(short switching_level,location destination) { // returns 
 		
 		auto& timers = univ.party.party_event_timers;
 		timers.erase(std::remove_if(timers.begin(), timers.end(), [](const cTimer& t) {
-			return t.node_type == 2;
+			return t.node_type == eSpecCtxType::TOWN;
 		}), timers.end());
 		
 	}
@@ -649,11 +651,11 @@ location end_town_mode(short switching_level,location destination) { // returns 
 }
 
 void handle_town_specials(short /*town_number*/, bool town_dead,location /*start_loc*/) {
-	queue_special(eSpecCtx::ENTER_TOWN, 2, town_dead ? univ.town->spec_on_entry_if_dead : univ.town->spec_on_entry, univ.party.town_loc);
+	queue_special(eSpecCtx::ENTER_TOWN, eSpecCtxType::TOWN, town_dead ? univ.town->spec_on_entry_if_dead : univ.town->spec_on_entry, univ.party.town_loc);
 }
 
 void handle_leave_town_specials(short /*town_number*/, short which_spec,location /*start_loc*/) {
-	queue_special(eSpecCtx::LEAVE_TOWN, 2, which_spec, univ.party.out_loc);
+	queue_special(eSpecCtx::LEAVE_TOWN, eSpecCtxType::TOWN, which_spec, univ.party.out_loc);
 }
 
 bool abil_exists(eItemAbil abil) { // use when outdoors
@@ -703,7 +705,7 @@ void start_town_combat(eDirection direction) {
 	set_pc_moves();
 	pick_next_pc();
 	center = univ.current_pc().combat_pos;
-	draw_buttons(0);
+	UI::toolbar.draw(mainPtr);
 	put_pc_screen();
 	set_stat_window_for_pc(univ.cur_pc);
 	give_help(48,49);
@@ -1328,8 +1330,8 @@ void draw_map(bool need_refresh) {
 	// area_to_draw_on is final draw to rect
 	// extern short store_pre_shop_mode,store_pre_talk_mode;
 	if((is_out()) || ((is_combat()) && (which_combat_type == 0)) ||
-		((overall_mode == MODE_TALKING) && (store_pre_talk_mode == 0)) ||
-		((overall_mode == MODE_SHOPPING) && (store_pre_shop_mode == 0))) {
+		((overall_mode == MODE_TALKING) && (store_pre_talk_mode == MODE_OUTDOORS)) ||
+		((overall_mode == MODE_SHOPPING) && (store_pre_shop_mode == MODE_OUTDOORS))) {
 		view_rect.left = minmax(0,8,univ.party.loc_in_sec.x - 20);
 		view_rect.right = view_rect.left + 40;
 		view_rect.top = minmax(0,8,univ.party.loc_in_sec.y - 20);
@@ -1360,8 +1362,8 @@ void draw_map(bool need_refresh) {
 		}
 	}
 	if((is_out()) || ((is_combat()) && (which_combat_type == 0)) ||
-		((overall_mode == MODE_TALKING) && (store_pre_talk_mode == 0)) ||
-		((overall_mode == MODE_SHOPPING) && (store_pre_shop_mode == 0)) ||
+		((overall_mode == MODE_TALKING) && (store_pre_talk_mode == MODE_OUTDOORS)) ||
+		((overall_mode == MODE_SHOPPING) && (store_pre_shop_mode == MODE_OUTDOORS)) ||
 		is_town() || is_combat()) {
 		area_to_draw_from = view_rect;
 		area_to_draw_from.width() = 40;
@@ -1396,13 +1398,13 @@ void draw_map(bool need_refresh) {
 		
 		if((is_out()) ||
 			((is_combat()) && (which_combat_type == 0)) ||
-			((overall_mode == MODE_TALKING) && (store_pre_talk_mode == 0)) ||
-			((overall_mode == MODE_SHOPPING) && (store_pre_shop_mode == 0)))
+			((overall_mode == MODE_TALKING) && (store_pre_talk_mode == MODE_OUTDOORS)) ||
+			((overall_mode == MODE_SHOPPING) && (store_pre_shop_mode == MODE_OUTDOORS)))
 			out_mode = true;
 		else out_mode = false;
 		
 		// TODO: It could be possible to draw the entire map here and then only refresh if a spot actually changes terrain type
-		sf::Texture& small_ter_gworld = *ResMgr::get<ImageRsrc>("termap");
+		sf::Texture& small_ter_gworld = *ResMgr::graphics.get("termap");
 		for(where.x = redraw_rect.left; where.x < redraw_rect.right; where.x++)
 			for(where.y = redraw_rect.top; where.y < redraw_rect.bottom; where.y++) {
 				draw_rect = orig_draw_rect;
@@ -1428,7 +1430,7 @@ void draw_map(bool need_refresh) {
 					if(pic >= 1000) {
 						if(spec_scen_g) {
 							//print_nums(0,99,pic);
-							sf::Texture* src_gw;
+							std::shared_ptr<const sf::Texture> src_gw;
 							if(drawLargeIcon) {
 								pic = pic % 1000;
 								graf_pos_ref(src_gw, custom_from) = spec_scen_g.find_graphic(pic);
@@ -1445,10 +1447,10 @@ void draw_map(bool need_refresh) {
 					} else if(drawLargeIcon) {
 						if(pic >= 960) {
 							custom_from = calc_rect(4 * ((pic - 960) / 5),(pic - 960) % 5);
-							rect_draw_some_item(*ResMgr::get<ImageRsrc>("teranim"), custom_from, map_gworld, draw_rect);
+							rect_draw_some_item(*ResMgr::graphics.get("teranim"), custom_from, map_gworld, draw_rect);
 						} else {
 							int which_sheet = pic / 50;
-							sf::Texture* src_gw = ResMgr::get<ImageRsrc>("ter" + std::to_string(1 + which_sheet)).get();
+							auto src_gw = &ResMgr::graphics.get("ter" + std::to_string(1 + which_sheet));
 							pic %= 50;
 							custom_from = calc_rect(pic % 10, pic / 10);
 							rect_draw_some_item(*src_gw, custom_from, map_gworld, draw_rect);
@@ -1464,7 +1466,7 @@ void draw_map(bool need_refresh) {
 					
 					if(is_out() ? univ.out->roads[where.x][where.y] : univ.town.is_road(where.x,where.y)) {
 						draw_rect.inset(1,1);
-						rect_draw_some_item(*ResMgr::get<ImageRsrc>("trim"),{8,112,12,116},map_gworld,draw_rect);
+						rect_draw_some_item(*ResMgr::graphics.get("trim"),{8,112,12,116},map_gworld,draw_rect);
 					}
 				}
 			}
@@ -1477,7 +1479,7 @@ void draw_map(bool need_refresh) {
 	// Now place terrain map gworld
 	TextStyle style;
 	style.font = FONT_BOLD;
-	style.pointSize = 11; //  Clort was 10
+	style.pointSize = 10;;
 	
 	the_rect = rectangle(mini_map);
 	tileImage(mini_map, the_rect,bg[4]);
@@ -1509,8 +1511,8 @@ void draw_map(bool need_refresh) {
 								draw_rect.right = draw_rect.left + 6;
 								draw_rect.bottom = draw_rect.top + 6;
 								
-								fill_rect(mini_map, draw_rect, sf::Color::Green);
-								frame_circle(mini_map, draw_rect, sf::Color::Blue);
+								fill_rect(mini_map, draw_rect, Colours::GREEN);
+								frame_circle(mini_map, draw_rect, Colours::BLUE);
 							}
 					}
 			if((overall_mode != MODE_SHOPPING) && (overall_mode != MODE_TALKING)) {
@@ -1520,7 +1522,7 @@ void draw_map(bool need_refresh) {
 				draw_rect.top = area_to_draw_on.top + 6 * (where.y - view_rect.top);
 				draw_rect.right = draw_rect.left + 6;
 				draw_rect.bottom = draw_rect.top + 6;
-				fill_rect(mini_map, draw_rect, sf::Color::Red);
+				fill_rect(mini_map, draw_rect, Colours::RED);
 				frame_circle(mini_map, draw_rect, sf::Color::Black);
 				
 			}
@@ -1548,6 +1550,8 @@ bool is_door(location destination) {
 void display_map() {
 	// Show the automap if it's not already visible
 	if(map_visible) return;
+	give_help(62,0);
+	
 	rectangle the_rect;
 	rectangle	dlogpicrect = {6,6,42,42};
 	
@@ -1555,6 +1559,8 @@ void display_map() {
 	map_visible = true;
 	draw_map(true);
 	makeFrontWindow(mainPtr);
+	
+	set_cursor(sword_curs);
 }
 
 void check_done() {

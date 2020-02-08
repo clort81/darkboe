@@ -1,6 +1,8 @@
 Graphics Credits
 ================
 
+All graphics remastered by Clort 2020...
+
 This is just a list of where all the graphics in this folder came from. In many cases,
 graphics will be referenced by their index as understood by the game; usually this is
 counted across first and then down, but in a few cases (like animated terrain or monsters)

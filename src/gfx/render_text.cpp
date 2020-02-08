@@ -3,7 +3,6 @@
 //  BoE
 //
 //  Created by Celtic Minstrel on 17-04-14.
-//  fixed by Clort 2020
 //
 //
 
@@ -14,24 +13,27 @@
 
 void TextStyle::applyTo(sf::Text& text) {
 	switch(font) {
-		case FONT_PLAIN:
-			//text.setFont(*ResMgr::get<FontRsrc>("plain"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortSans-11")); //Clort load bdf font instead of 'plain'
-			break;
-		case FONT_BOLD:
-			//text.setFont(*ResMgr::get<FontRsrc>("bold"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortSansBold-11")); //Clort load bdf font instead of 'bold'
-
-			break;
-		case FONT_DUNGEON:
-			//text.setFont(*ResMgr::get<FontRsrc>("dungeon"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortDamsel-20"));
-			break;
-		case FONT_MAIDWORD:
-			//text.setFont(*ResMgr::get<FontRsrc>("maidenword"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortDamsel-20")); //Clort load bdf font instead of 'maidenword'
-			break;
+                case FONT_PLAIN:
+                        //text.setFont(*ResMgr::get<FontRsrc>("plain"));
+                        text.setFont(*ResMgr::fonts.get("ClortSans-11")); //Clort load bdf font instead of 'plain'
+                        break;
+                case FONT_BOLD:
+                        //text.setFont(*ResMgr::get<FontRsrc>("bold"));
+                        text.setFont(*ResMgr::fonts.get("ClortSansBold-11")); //Clort load bdf font instead of 'bold'
+                        break;
+                case FONT_DUNGEON:
+                        //text.setFont(*ResMgr::get<FontRsrc>("dungeon"));
+                        text.setFont(*ResMgr::fonts.get("ClortDamsel-20"));
+                        break;
+                case FONT_MAIDWORD:
+                        //text.setFont(*ResMgr::get<FontRsrc>("maidenword"));
+                        text.setFont(*ResMgr::fonts.get("ClortDamsel-20")); //Clort load bdf font instead of 'maidenword'
+                        break;
 	}
+     
+	if(pointSize > 16) pointSize=20; // Clort force bigtext to ClortDamsel size
+	if(pointSize < 11) pointSize=11; // Clort force bigtext to ClortPlain size
+	if((pointSize < 17) && (pointSize > 11)) pointSize=11; // Clort force bigtext to ClortPlain size
 	text.setCharacterSize(pointSize);
 	int style = sf::Text::Regular;
 	if(italic) style |= sf::Text::Italic;
@@ -95,11 +97,7 @@ static void win_draw_string(sf::RenderTarget& dest_window,rectangle dest_rect,st
 	short line_height = options.style.lineHeight;
 	sf::Text str_to_draw;
 	options.style.applyTo(str_to_draw);
-        //if (options.style.font==FONT_BOLD) str_to_draw.setLetterSpacing(2.0); //Clort test a wider kerning
-        if ((options.style.italic!=false) && (options.style.font!=FONT_BOLD)) str_to_draw.setLetterSpacing(1.58); //Clort widen italics spacing: FIXME - Adjust status icons 
-        //if ((options.style.italic==false) && (options.style.font==FONT_BOLD)) str_to_draw.setLetterSpacing(2); //Clort widen BOLDED spacing: FIXME - Adjust status icons 
-        //if ((options.style.italic!=false) && (options.style.font!=FONT_BOLD)) str_to_draw.setLetterSpacing(1.58); //Clort widen italics spacing: FIXME - Adjust status icons 
-
+        if ((options.style.italic!=false) && (options.style.font!=FONT_BOLD)) str_to_draw.setLetterSpacing(1.58); // Clort widen italics
 	short str_len;
 	unsigned short last_line_break = 0,last_word_break = 0;
 	short total_width = 0;
@@ -189,10 +187,12 @@ static void win_draw_string(sf::RenderTarget& dest_window,rectangle dest_rect,st
 			fill_rect(dest_window, bounds, options.hilite_bg);
 		} else str_to_draw.setColor(options.style.colour);
 		dest_window.draw(str_to_draw);
-		/*Clort - disable fake bolding if(options.style.font == FONT_BOLD) {
+		/* Clort - disable fake bolding 
+			if(options.style.font == FONT_BOLD) {
 			str_to_draw.move(1, 0);
-			dest_window.draw(str_to_draw); 
-		}*/
+			dest_window.draw(str_to_draw);
+		}
+		*/
 	}
 }
 

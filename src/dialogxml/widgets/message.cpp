@@ -99,9 +99,9 @@ std::string cTextMsg::parse(ticpp::Element& who, std::string fname) {
 			std::string val;
 			attr->GetValue(&val);
 			if(val == "large")
-				setFormat(TXT_SIZE, 11); // Clort was 12
+				setFormat(TXT_SIZE, 12);
 			else if(val == "small")
-				setFormat(TXT_SIZE, 11); // Clort was 10
+				setFormat(TXT_SIZE, 10);
 			else if(val == "title")
 				setFormat(TXT_SIZE, 18);
 			else throw xBadVal("text",name,val,attr->Row(),attr->Column(),fname);
@@ -162,7 +162,7 @@ cTextMsg::cTextMsg(cDialog& parent) :
 	cControl(CTRL_TEXT,parent),
 	drawFramed(false),
 	textFont(FONT_BOLD),
-	textSize(11),
+	textSize(10),
 	color(parent.getDefTextClr()),
 	fromList("none") {}
 
@@ -170,7 +170,7 @@ cTextMsg::cTextMsg(sf::RenderWindow& parent) :
 	cControl(CTRL_TEXT,parent),
 	drawFramed(false),
 	textFont(FONT_BOLD),
-	textSize(11),
+	textSize(10),
 	color(cDialog::defaultBackground == cDialog::BG_DARK ? sf::Color::White : sf::Color::Black),
 	fromList("none") {}
 
@@ -208,7 +208,7 @@ void cTextMsg::draw(){
 			to_rect.left += 3;
 			win_draw_string(*inWindow,to_rect,lbl,eTextMode::LEFT_BOTTOM,style);
 		}else {
-			style.lineHeight = textSize + 6; // Clort was 2
+			style.lineHeight = textSize + 2;
 			to_rect.inset(4,4);
 			win_draw_string(*inWindow,to_rect,lbl,eTextMode::WRAP,style);
 		}

@@ -101,17 +101,17 @@ fs::path locate_scenario(std::string scen_name) {
 
 bool load_scenario(fs::path file_to_load, cScenario& scenario, bool only_header) {
 	// Before loading a scenario, we may need to pop scenario resource paths.
-	fs::path graphics_path = ResMgr::popPath<ImageRsrc>();
+	fs::path graphics_path = ResMgr::graphics.popPath();
 	for(auto p : graphics_path) {
 		if(p.string() == "data") {
-			ResMgr::pushPath<ImageRsrc>(graphics_path);
+			ResMgr::graphics.pushPath(graphics_path);
 			break;
 		}
 	}
-	fs::path sounds_path = ResMgr::popPath<SoundRsrc>();
+	fs::path sounds_path = ResMgr::sounds.popPath();
 	for(auto p : sounds_path) {
 		if(p.string() == "data") {
-			ResMgr::pushPath<SoundRsrc>(sounds_path);
+			ResMgr::sounds.pushPath(sounds_path);
 			break;
 		}
 	}
@@ -266,8 +266,6 @@ bool load_scenario_v1(fs::path file_to_load, cScenario& scenario, bool only_head
 			case 2: scenario.towns[i] = new cTown(scenario, AREA_SMALL); break;
 		}
 		load_town_v1(scenario.scen_file, i, *scenario.towns[i], *temp_scenario, shops);
-// Clort
-std::cout << " Clort is Love " << i << "\n";
 	}
 	// Enable character creation in starting town
 	scenario.towns[scenario.which_town_start]->has_tavern = true;
@@ -1679,7 +1677,7 @@ void readTownFromXml(ticpp::Document&& data, cTown*& town, cScenario& scen) {
 			if(num_timers >= 8)
 				throw xBadNode(type, elem->Row(), elem->Column(), fname);
 			readTimerFromXml(*elem, town->timers[num_timers]);
-			town->timers[num_timers].node_type = 2;
+			town->timers[num_timers].node_type = eSpecCtxType::SCEN;
 			num_timers++;
 		} else if(type == "flags") {
 			Iterator<Element> flag;
@@ -2193,13 +2191,13 @@ bool load_scenario_v2(fs::path file_to_load, cScenario& scenario, bool only_head
 		// This is a bit of trickery to get it to only count the first consecutive range of sheets
 		while(have_pic[num_graphic_sheets])
 			num_graphic_sheets++;
-		ResMgr::pushPath<ImageRsrc>(tempDir/scenario_temp_dir_name/"graphics");
-		ResMgr::pushPath<SoundRsrc>(tempDir/scenario_temp_dir_name/"sounds");
+		ResMgr::graphics.pushPath(tempDir/scenario_temp_dir_name/"graphics");
+		ResMgr::sounds.pushPath(tempDir/scenario_temp_dir_name/"sounds");
 	} else {
 		if(fs::is_directory(file_to_load/"graphics"))
-			ResMgr::pushPath<ImageRsrc>(file_to_load/"graphics");
+			ResMgr::graphics.pushPath(file_to_load/"graphics");
 		if(fs::is_directory(file_to_load/"sounds"))
-			ResMgr::pushPath<SoundRsrc>(file_to_load/"sounds");
+			ResMgr::sounds.pushPath(file_to_load/"sounds");
 		std::string fname;
 		while(fname = "sheet" + std::to_string(num_graphic_sheets) + ".png", fs::exists(file_to_load/"graphics"/fname))
 			num_graphic_sheets++;
@@ -2451,13 +2449,16 @@ void load_spec_graphics_v1(fs::path scen_file) {
 			// This means they need an alpha channel
 			graphics_store.createMaskFromColor(sf::Color::White);
 			spec_scen_g.is_old = true;
-			spec_scen_g.sheets = new sf::Texture[1];
+			spec_scen_g.sheets.resize(1);
 			spec_scen_g.numSheets = 1;
-			if(!spec_scen_g.sheets[0].loadFromImage(graphics_store)) {
+			sf::Texture sheet;
+			if(sheet.loadFromImage(graphics_store)) {
+				spec_scen_g.sheets[0].reset(new sf::Texture(sheet));
+			} else {
 				showWarning("An error occurred while converting old-style graphics into the new format.",noGraphics);
 				spec_scen_g.is_old = false;
 				spec_scen_g.numSheets = 0;
-				delete[] spec_scen_g.sheets;
+				spec_scen_g.sheets.clear();
 			}
 		}
 	}
@@ -2466,12 +2467,12 @@ void load_spec_graphics_v1(fs::path scen_file) {
 void load_spec_graphics_v2(int num_sheets) {
 	spec_scen_g.clear();
 	if(num_sheets > 0) {
-		spec_scen_g.sheets = new sf::Texture[num_sheets];
+		spec_scen_g.sheets.resize(num_sheets);
 		spec_scen_g.numSheets = num_sheets;
 	}
 	while(num_sheets-- > 0) {
 		std::string name = "sheet" + std::to_string(num_sheets);
-		ResMgr::free<ImageRsrc>(name);
-		spec_scen_g.sheets[num_sheets] = *ResMgr::get<ImageRsrc>(name);
+		ResMgr::graphics.free(name);
+		spec_scen_g.sheets[num_sheets] = &ResMgr::graphics.get(name);
 	}
 }

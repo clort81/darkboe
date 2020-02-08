@@ -2,6 +2,7 @@
 #include "cursors.hpp"
 // #include "restypes.hpp" // Include before X11 to avoid macro conflicts in SFML
 #include "res_cursor.hpp"
+#include <SFML/Graphics.hpp>
 
 namespace x11 {
 
@@ -44,7 +45,7 @@ void set_cursor(cursor_type which_c) {
 	if(which_c == text_curs) {
 		// XDefineCursor(NULL, current_window, ibeam);
 	} else {
-		Cursor& curs = *ResMgr::get<CursorRsrc>(cursors[which_c]);
+		Cursor& curs = *ResMgr::cursors.get(cursors[which_c]);
 		curs.apply();
 	}
 }

@@ -24,13 +24,11 @@ void draw_startup(short but_type);
 void draw_anim();
 void place_anim(); 
 void draw_start_button(eStartButton which_position,short which_button);
-void main_button_click(int which_button);
 void arrow_button_click(rectangle button_rect);
 void end_startup();
 void load_main_screen();
 void redraw_screen(int refresh);
 void put_background();
-void draw_buttons(short mode);
 void draw_text_bar();
 void refresh_text_bar();
 void put_text_bar(std::string str);
@@ -51,7 +49,9 @@ bool is_nature(short i, short j, unsigned short ground_t);
 void put_dialog_graphic(short graphic_num,short spec_g,rectangle draw_rect);
 void draw_startup_stats();
 void draw_trim(short q,short r,short which_trim,ter_num_t ground_ter);
+sf::FloatRect compute_viewport (sf::RenderWindow const &, int mode, float ui_scale, float width, float height);
 
 void draw_startup_anim(bool advance);
+
 
 #endif

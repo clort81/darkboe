@@ -4,6 +4,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <sstream>
+#include <cstdlib>
 #include <X11/Xlib.h>
 
 #include <sys/utsname.h>
@@ -68,22 +69,7 @@ char keyToChar(sf::Keyboard::Key key, bool isShift) {
 	case kb::Return: return '\n';
 	case kb::BackSpace: return '\b';
 	case kb::Delete: return '\x7f';
-	case kb::Numpad0: return '0';
-	case kb::Numpad1: return '1';
-	case kb::Numpad2: return '2';
-	case kb::Numpad3: return '3';
-	case kb::Numpad4: return '4';
-	case kb::Numpad5: return '5';
-	case kb::Numpad6: return '6';
-	case kb::Numpad7: return '7';
-	case kb::Numpad8: return '8';
-	case kb::Numpad9: return '9';
-		// TODO: Should have Equal here, but SFML doesn't distinguish between normal and keybad equal :/
-		// Ditto for the decimal point.
-	case kb::Divide: return '/';
-	case kb::Multiply: return '*';
-	case kb::Subtract: return '-';
-	case kb::Add: return '+';
+		// Skip numpad keys, those that we handle at all are handled separately anyway
 	default: break;
 	}
 	return 0;
@@ -101,18 +87,10 @@ std::string get_os_version() {
 }
 
 void makeFrontWindow(sf::Window& win) {
-//        sf::Window win_handle = win.getSystemHandle();
-//        win_handle.requestFocus();
-// windows version        HWND win_handle = win.getSystemHandle();
-// windows version        BringWindowToTop(win_handle);
-
-
 }
 
 void setWindowFloating(sf::Window& win, bool floating) {
 	// Code adapted from <http://stackoverflow.com/a/16235920>
-        //XInitThreads(); // Clort (unsure)
-        // Clort - more segfaults without? usleep(100000); // Clort wait for XinitThreads to finish before opening display? 
 	auto display = XOpenDisplay(NULL);
 	Atom wmStateAbove = XInternAtom(display, "_NET_WM_STATE_ABOVE", true);
 	if(wmStateAbove != None) {
@@ -224,6 +202,7 @@ void beep() {
 }
 
 void launchURL(std::string url) {
+	system((std::string { "xdg-open " } + url).c_str());
 }
 
 // TODO: Implement modal session.
@@ -239,6 +218,7 @@ ModalSession::~ModalSession() {
 }
 
 int getMenubarHeight() {
-	//return 1;
-	return 0; // Clort how about zero for no-menu-bar
+	// TODO: somehow get this constant in here from boe.consts.hpp
+	// return MENUBAR_HEIGHT;
+	return 20;
 }

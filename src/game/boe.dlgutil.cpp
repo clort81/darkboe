@@ -34,7 +34,7 @@
 #include "prefs.hpp"
 #include "shop.hpp"
 #include "cursors.hpp"
-#include "tools/enum_map.hpp"
+#include "enum_map.hpp"
 
 extern eItemWinMode stat_window;
 extern eGameMode overall_mode;
@@ -67,9 +67,7 @@ short store_personality,store_personality_graphic,shop_identify_cost;
 std::string save_talk_str1, save_talk_str2;
 sf::RenderTexture talk_gworld;
 bool talk_end_forced;
-// Clort original rect rectangle talk_area_rect = {7,19,422,298}, word_place_rect = {44,7,372,257},talk_help_rect = {7,268,23,286};
-
-rectangle talk_area_rect = {7,19,422,298}, word_place_rect = {44,7,372,260},talk_help_rect = {7,268,23,286};//Clort word_place_rect needed to be wider (was 257)
+rectangle talk_area_rect = {7,19,422,298}, word_place_rect = {44,7,372,257},talk_help_rect = {7,268,23,286};
 std::string title_string;
 mon_num_t store_monst_type;
 short store_m_num;
@@ -363,8 +361,8 @@ void handle_sale(cShopItem item, int i) {
 			if(univ.party.gold < cost)
 				ASB("Not enough gold.");
 			else {
-				short s1, s2, s3;
-				run_special(eSpecCtx::SHOPPING, 0, base_item.item_level, {0,0}, &s1, &s2, &s3);
+				short s1;
+				run_special(eSpecCtx::SHOPPING, eSpecCtxType::SCEN, base_item.item_level, {0,0}, &s1);
 				if(s1 <= 0) {
 					take_gold(cost,false);
 					active_shop.takeOne(i);
@@ -546,7 +544,6 @@ void set_up_shop_array() {
 
 void start_talk_mode(short m_num,short personality,mon_num_t monst_type,short store_face_pic) {
 	rectangle area_rect;
-	std::string place_string1;
 	
 	store_personality = personality;
 	
@@ -572,10 +569,11 @@ void start_talk_mode(short m_num,short personality,mon_num_t monst_type,short st
 	current_talk_node = TALK_LOOK;
 	
 	// Bring up and place first strings.
-	place_string1 = univ.town.cur_talk().people[personality % 10].look;
+	save_talk_str1 = univ.town.cur_talk().people[personality % 10].look;
+	save_talk_str2 = "";
 	can_save_talk = true;
 	
-	place_talk_str(place_string1, "", 0, dummy_rect);
+	place_talk_str(save_talk_str1, "", 0, dummy_rect);
 	
 	put_item_screen(stat_window);
 	give_help(5,6);
@@ -659,7 +657,7 @@ static void show_job_bank(int which_bank, std::string title) {
 }
 
 void handle_talk_event(location p) {
-	short get_pc,s1 = -1,s2 = -1,s3 = -1;
+	short get_pc,s1 = -1,s2 = -1;
 	char asked[4];
 	
 	short a,b,c,d;
@@ -748,8 +746,6 @@ void handle_talk_event(location p) {
 			end_talk_mode();
 			return;
 		case TALK_BACK: // only if there's nothing to go back to
-place_talk_str(save_talk_str2, "puppies", 0, dummy_rect); // Clort
-update_last_talk(which_talk_entry);
 			return; // so, there's nothing to do here
 		case TALK_ASK: // ask about
 			save_talk_str1 = get_text_response("Ask about what?", 8);
@@ -1022,24 +1018,24 @@ update_last_talk(which_talk_entry);
 			break;
 			// TODO: Strings resulting from this don't seem to be recordable; whyever not!?
 		case eTalkNode::CALL_TOWN_SPEC:
-			run_special(eSpecCtx::TALK,2,a,univ.party.town_loc,&s1,&s2,&s3);
+			run_special(eSpecCtx::TALK, eSpecCtxType::TOWN, a, univ.party.town_loc, &s1, &s2);
 			// check s1 & s2 to see if we got diff str, and, if so, munch old strs
 			if((s1 >= 0) || (s2 >= 0)) {
 				save_talk_str1 = s1 >= 0 ? univ.town->spec_strs[s1] : "";
 				save_talk_str2 = s2 >= 0 ? univ.town->spec_strs[s2] : "";
 			}
-			get_strs(save_talk_str1,save_talk_str2,2,s1,s2);
+			get_strs(save_talk_str1, save_talk_str2, eSpecCtxType::TOWN, s1, s2);
 			put_pc_screen();
 			put_item_screen(stat_window);
 			break;
 		case eTalkNode::CALL_SCEN_SPEC:
-			run_special(eSpecCtx::TALK,0,a,univ.party.town_loc,&s1,&s2,&s3);
+			run_special(eSpecCtx::TALK, eSpecCtxType::SCEN, a, univ.party.town_loc, &s1, &s2);
 			// check s1 & s2 to see if we got diff str, and, if so, munch old strs
 			if((s1 >= 0) || (s2 >= 0)) {
 				save_talk_str1 = s1 >= 0 ? univ.scenario.spec_strs[s1] : "";
 				save_talk_str2 = s2 >= 0 ? univ.scenario.spec_strs[s2] : "";
 			}
-			get_strs(save_talk_str1,save_talk_str2,0,s1,s2);
+			get_strs(save_talk_str1, save_talk_str2, eSpecCtxType::SCEN, s1, s2);
 			put_pc_screen();
 			put_item_screen(stat_window);
 			break;
@@ -1317,7 +1313,7 @@ static bool tip_of_day_event_filter(cDialog& me, std::string item_hit, short& pa
 		me.toast(true);
 	} else if(item_hit == "next") {
 		page++;
-		if(page == ResMgr::get<StringRsrc>("tips")->size() - 50)
+		if(page == ResMgr::strings.get("tips")->size() - 50)
 			page = 0;
 		place_str = get_str("tips",50 + page);
 		me["tip"].setText(place_str);
@@ -1328,7 +1324,7 @@ static bool tip_of_day_event_filter(cDialog& me, std::string item_hit, short& pa
 void tip_of_day() {
 	using namespace std::placeholders;
 	
-	short page = get_ran(1,0,ResMgr::get<StringRsrc>("tips")->size() - 51);
+	short page = get_ran(1,0,ResMgr::strings.get("tips")->size() - 51);
 	
 	set_cursor(sword_curs);
 	

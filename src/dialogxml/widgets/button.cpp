@@ -61,16 +61,16 @@ void cButton::draw(){
 	
 	if(visible){
 		TextStyle style;
-		if(type == BTN_TINY) style.pointSize = 11;
-		else if(type == BTN_PUSH) style.pointSize = 11;
-		else style.pointSize = 11;
+		if(type == BTN_TINY) style.pointSize = 9;
+		else if(type == BTN_PUSH) style.pointSize = 10;
+		else style.pointSize = 12;
 		from_rect = btnRects[type][depressed];
 		to_rect = frame;
 		if(type == BTN_TINY) {
 			to_rect.right = to_rect.left + 14;
 			to_rect.bottom = to_rect.top + 10;
 		}
-		rect_draw_some_item(*ResMgr::get<ImageRsrc>(buttons[btnGW[type]]),from_rect,*inWindow,to_rect,sf::BlendAlpha);
+		rect_draw_some_item(*ResMgr::graphics.get(buttons[btnGW[type]]),from_rect,*inWindow,to_rect,sf::BlendAlpha);
 		style.colour = sf::Color::Black;
 		style.lineHeight = 8;
 		eTextMode textMode = eTextMode::CENTRE;
@@ -322,7 +322,7 @@ cLed::cLed(cDialog& parent) :
 	cButton(parent,CTRL_LED),
 	state(led_off),
 	textFont(FONT_BOLD),
-	textSize(11) {
+	textSize(10) {
 	type = BTN_LED;
 	using namespace std::placeholders;
 	attachEventHandler<EVT_CLICK>(std::bind(&cLed::defaultClickHandler, this, _1, _2, _3));
@@ -376,7 +376,7 @@ void cLed::draw(){
 		to_rect = frame;
 		to_rect.right = to_rect.left + 14;
 		to_rect.bottom = to_rect.top + 10;
-		rect_draw_some_item(*ResMgr::get<ImageRsrc>(buttons[btnGW[BTN_LED]]),from_rect,*inWindow,to_rect);
+		rect_draw_some_item(*ResMgr::graphics.get(buttons[btnGW[BTN_LED]]),from_rect,*inWindow,to_rect);
 		style.colour = textClr;
 		to_rect.right = frame.right;
 		to_rect.left = frame.left + 18; // Possibly could be 20
@@ -478,9 +478,9 @@ std::string cLed::parse(ticpp::Element& who, std::string fname) {
 			std::string val;
 			attr->GetValue(&val);
 			if(val == "large")
-				setFormat(TXT_SIZE, 11);
+				setFormat(TXT_SIZE, 12);
 			else if(val == "small")
-				setFormat(TXT_SIZE, 11);
+				setFormat(TXT_SIZE, 10);
 			else if(val == "title")
 				setFormat(TXT_SIZE, 18);
 			else throw xBadVal("led",name,val,attr->Row(),attr->Column(),fname);

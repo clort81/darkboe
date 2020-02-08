@@ -18,13 +18,14 @@
 #include "sounds.hpp"
 #include "mathutil.hpp"
 #include "button.hpp"
-#include "tools/enum_map.hpp"
+#include "enum_map.hpp"
 
 #include "boe.party.hpp"
 #include "boe.town.hpp"
 #include "boe.items.hpp"
 #include "boe.dlgutil.hpp"
 #include "boe.infodlg.hpp"
+#include "boe.ui.hpp"
 
 #include "scrollbar.hpp"
 
@@ -40,7 +41,7 @@ extern sf::RenderWindow mainPtr;
 extern eItemWinMode stat_window;
 extern eGameMode overall_mode;
 extern short current_spell_range;
-extern bool anim_onscreen,party_in_memory;
+extern bool party_in_memory;
 extern bool flushingInput;
 extern bool cartoon_happening, fog_lifted;
 extern short anim_step;
@@ -74,16 +75,7 @@ sf::View mainView;
 
 long anim_ticks = 0;
 
-// 0 - terrain   1 - buttons   2 - pc stats
-// 3 - item stats   4 - text bar   5 - text area (not right)
-//Clort orig enum_map(eGuiArea, rectangle) win_from_rects = {{0,0,350,278},{0,0,37,258},{0,0,115,288},{0,0,143,288},{0,0,21,279},{0,0,0,288}};
-// Clort - fixes onebad enum_map(eGuiArea, rectangle) win_from_rects = {{0,0,349,277},{0,0,37,258},{0,0,115,288},{0,0,143,288},{0,0,21,279},{0,0,0,288}};
-// morebad enum_map(eGuiArea, rectangle) win_from_rects = {{0,0,349,277},{0,0,37,258},{0,0,115,288},{0,0,143,288},{0,0,21,279},{0,0,0,288}};
-// more badenum_map(eGuiArea, rectangle) win_to_rects = {{7,19,35,298},{385,19,423,285},{7,305,123,576},{132,305,276,576},{360,19,381,298},{285,305,423,561}};
-// Clort bad one enum_map(eGuiArea, rectangle) win_to_rects = {{7,19,35,297},{385,19,423,285},{7,305,123,576},{132,305,276,576},{360,19,381,298},{285,305,423,561}};
-enum_map(eGuiArea, rectangle) win_from_rects = {{0,0,350,278},{0,0,37,258},{0,0,115,288},{0,0,143,288},{0,0,21,279},{0,0,0,288}};
-enum_map(eGuiArea, rectangle) win_to_rects = {{7,19,358,298},{385,19,423,285},{7,305,123,576},{132,305,276,576},{360,19,381,298},{285,305,423,561}};
-
+extern enum_map(eGuiArea, rectangle) win_to_rects;
 
 // 0 - title  1 - button  2 - credits  3 - base button
 rectangle startup_from[4] = {{0,0,274,602},{274,0,322,301},{0,301,67,579},{274,301,314,341}};
@@ -138,60 +130,42 @@ void adjust_window_mode() {
 	winSettings.stencilBits = 1;
 	sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
 	hideMenuBar();
-	int menubarHeight = getMenubarHeight();
 	bool firstTime = !mainPtr.isOpen();
 	float ui_scale = get_float_pref("UIScale", 1.0);
 	if(ui_scale < 0.1) ui_scale = 1.0;
 	float width = 605 * ui_scale, height = 430 * ui_scale;
-	location ul;
 	
 	// TODO: Make display_mode an enum
 	// 0 - center 1- ul 2 - ur 3 - dl 4 - dr 5 - small win
 	int mode = get_int_pref("DisplayMode");
 	if(mode == 5) {
-		int winHeight = height + menubarHeight;
+		// Increase window height to make room for the menubar
+		int winHeight = height;
+#ifndef _WIN32
+		// Not on Windows, for some reason
+		winHeight += getMenubarHeight();
+#endif
+
 		mainPtr.create(sf::VideoMode(width, winHeight, 32), "Blades of Exile", sf::Style::Titlebar | sf::Style::Close, winSettings);
+
+		// Center the small window on the desktop
 		mainPtr.setPosition({static_cast<int>((desktop.width - width) / 2), static_cast<int>((desktop.height - height) / 2)});
 	} else {
 		mainPtr.create(desktop, "Blades of Exile", sf::Style::None, winSettings);
 		mainPtr.setPosition({0,0});
 	}
-	
-	rectangle windRect(mainPtr);
-#ifdef _WIN32
-	windRect.height() -= menubarHeight;
-#endif
-	if(mode == 0) {
-		ul.x = (windRect.right - width) / 2;
-		ul.y = (windRect.bottom - height) / 2;
-	} else if(mode < 5) {
-		if(mode == 1 || mode == 3)
-			ul.x = 10;
-		else ul.x = windRect.right - width - 10;
-		if(mode == 1 || mode == 2)
-			ul.y = 28
-#ifndef _WIN32
-				+ menubarHeight
-#endif
-			;
-		else ul.y = windRect.bottom - height - 28;
-	}
-	
-	// Initialize the viewport for the game UI
+
+	// Initialize the view
 	mainView.setSize(width, height);
 	mainView.setCenter(width / 2, height / 2);
-	sf::FloatRect mainPort;
-	mainPort.left = float(ul.x) / windRect.width();
-	mainPort.top = float(ul.y) / windRect.height();
-	mainPort.width = ui_scale * width / windRect.width();
-	mainPort.height = ui_scale * height / windRect.height();
+
+	sf::FloatRect mainPort = compute_viewport(mainPtr, mode, ui_scale, width, height);
 	mainView.setViewport(mainPort);
 	
 #ifndef __APPLE__ // This overrides Dock icon on OSX, which isn't what we want at all
-	ImageRsrc& icon = *ResMgr::get<ImageRsrc>("icon");
-	mainPtr.setIcon(icon.getSize().x, icon.getSize().y, icon.copyToImage().getPixelsPtr());
+	const ImageRsrc& icon = ResMgr::graphics.get("icon", true);
+	mainPtr.setIcon(icon->getSize().x, icon->getSize().y, icon->copyToImage().getPixelsPtr());
 #endif
-	if(!firstTime) redraw_screen(REFRESH_NONE);
 	if(text_sbar) {
 		text_sbar->relocate({560,285});
 		item_sbar->relocate({560,148});
@@ -203,15 +177,79 @@ void adjust_window_mode() {
 	showMenuBar();
 }
 
+// Viewport is applied to the View and designates where in the OS window the source of the View is drawn.
+sf::FloatRect compute_viewport(const sf::RenderWindow& mainPtr, int mode, float ui_scale, float width, float height) {
+
+	sf::FloatRect viewport;
+
+	// Dimensions of the OS window.
+	rectangle windRect { mainPtr };
+
+	// This is an additional offset between the "logical" top of the window an the UI.
+	// On Windows and Mac no offset is needed because the menubar is not a part of the mainPtr, but
+	// on Linux it is.
+	int os_specific_y_offset =
+#if defined(SFML_SYSTEM_WINDOWS) || defined(SFML_SYSTEM_MAC)
+		0;
+#else
+		getMenubarHeight();
+#endif
+
+	// Width and height: how large the viewport is. They seem to be calculated
+	// in terms of *source* dimensions, with values above 1 resulting in an upscale.
+	viewport.width  = ui_scale * width / windRect.width();
+	viewport.height = ui_scale * height / windRect.height();
+
+	// Buffer in pixels between ui edge and window edge. There seem to be
+	// implicit (builtin) buffers the top and bottom of the UI so this is just for the sides.
+	int const extra_horizontal_buffer { 7 };
+
+	// Left and top: where the viewport is.
+	// Left and top seem to be in terms *target* dimensions,
+	// so top = 0.5 with window height 450 means 225 px offset from the top.
+	if(mode == 0) {
+		// Fullscreen centered
+		viewport.left = float((windRect.width() - width) / 2) / windRect.width();
+		viewport.top  = float((windRect.height() - height - os_specific_y_offset) / 2)/ windRect.height();
+	} else if(mode == 1) {
+		// Fullscreen top left
+		viewport.left = float(extra_horizontal_buffer) / windRect.width();
+		viewport.top  = float(os_specific_y_offset) / windRect.height();
+	} else if(mode == 2) {
+		// Fullscreen top right
+		viewport.left = float(windRect.right - width - extra_horizontal_buffer) / windRect.width();
+		viewport.top  = float(os_specific_y_offset) / windRect.height();
+	} else if(mode == 3) {
+		// Fullscreen bottom left
+		viewport.left = float(extra_horizontal_buffer) / windRect.width();
+		// DIRTY HACK: windRect in fullscreen modes gives us the entire display, but at the same time
+		// there could be a windows taskbar / mac os dock / xfce taskbar / etc that consumes a part
+		// of that display, and that we do not know size of. So we need to account for that somehow,
+		// so we add 28 more pixels (this was the amount in the previous version of this code).
+		viewport.top  = float(windRect.bottom - height - os_specific_y_offset - 28) / windRect.height();
+	} else if(mode == 4) {
+		// Fullscreen bottom right
+		viewport.left = float(windRect.right - width - extra_horizontal_buffer) / windRect.width();
+		// DIRTY HACK: same as for mode 3
+		viewport.top  = float(windRect.bottom - height - os_specific_y_offset - 28) / windRect.height();
+	} else if(mode == 5) {
+		// Small windowed
+		viewport.left = 0;
+		viewport.top  = float(os_specific_y_offset) / windRect.height();
+	}
+
+	return viewport;
+}
+
 void init_startup() {
 	// Preload the main startup images
-	ResMgr::get<ImageRsrc>("startup");
-	ResMgr::get<ImageRsrc>("startbut");
-	ResMgr::get<ImageRsrc>("startanim");
+	ResMgr::graphics.get("startup", true);
+	ResMgr::graphics.get("startbut", true);
+	ResMgr::graphics.get("startanim", true);
 }
 
 void draw_startup(short but_type) {
-	sf::Texture& startup_gworld = *ResMgr::get<ImageRsrc>("startup");
+	sf::Texture& startup_gworld = *ResMgr::graphics.get("startup", true);
 	rect_draw_some_item(startup_gworld,startup_from[0],mainPtr,startup_top);
 	
 	for(auto btn : startup_button.keys()) {
@@ -231,9 +269,9 @@ void draw_startup_anim(bool advance) {
 	anim_from = anim_to;
 	anim_from.offset(-1,-4 + startup_anim_pos);
 	if(advance) startup_anim_pos = (startup_anim_pos + 1) % 542;
-	rect_draw_some_item(*ResMgr::get<ImageRsrc>("startbut"),anim_size,mainPtr,startup_button[STARTBTN_SCROLL]);
+	rect_draw_some_item(*ResMgr::graphics.get("startbut",true),anim_size,mainPtr,startup_button[STARTBTN_SCROLL]);
 	anim_to.offset(startup_button[STARTBTN_SCROLL].left, startup_button[STARTBTN_SCROLL].top);
-	rect_draw_some_item(*ResMgr::get<ImageRsrc>("startanim"),anim_from,mainPtr,anim_to,sf::BlendAlpha);
+	rect_draw_some_item(*ResMgr::graphics.get("startanim",true),anim_from,mainPtr,anim_to,sf::BlendAlpha);
 }
 
 void draw_startup_stats() {
@@ -241,11 +279,11 @@ void draw_startup_stats() {
 	
 	TextStyle style;
 	style.font = FONT_DUNGEON;
-	style.pointSize = 20; // Clort is now ClortDamsel
+	style.pointSize = 24;
 	
 	to_rect = startup_top;
 	to_rect.offset(20 - 18, 35);
-	style.colour = CL_OFFWHITE; // Clort was white
+	style.colour = sf::Color::White;
 	style.lineHeight = 18;
 	
 	if(!party_in_memory) {
@@ -260,10 +298,10 @@ void draw_startup_stats() {
 		frame_rect.offset(-9,10);
 		// TODO: Maybe I should rename that variable
 		::frame_rect(mainPtr, frame_rect, sf::Color::White);
-		
+
 		to_rect.offset(221,37);
 		win_draw_string(mainPtr,to_rect,"Your party:",eTextMode::WRAP,style);
-		style.pointSize = 11;
+		style.pointSize = 12;
 		style.font = FONT_BOLD;
 		for(short i = 0; i < 6; i++) {
 			pc_rect = startup_top;
@@ -271,13 +309,13 @@ void draw_startup_stats() {
 			pc_rect.right = pc_rect.left + 300;
 			pc_rect.bottom = pc_rect.top + 79;
 			pc_rect.offset(60 + 232 * (i / 3) - 9,95 + 45 * (i % 3));
-			
+
 			if(univ.party[i].main_status != eMainStatus::ABSENT) {
 				to_rect = party_to;
 				to_rect.offset(pc_rect.left,pc_rect.top);
 				pic_num_t pic = univ.party[i].which_graphic;
 				if(pic >= 1000) {
-					sf::Texture* gw;
+					std::shared_ptr<const sf::Texture> gw;
 					graf_pos_ref(gw, from_rect) = spec_scen_g.find_graphic(pic % 1000, pic >= 10000);
 					rect_draw_some_item(*gw,from_rect,mainPtr,to_rect,sf::BlendAlpha);
 				} else if(pic >= 100) {
@@ -286,21 +324,21 @@ void draw_startup_stats() {
 					// PCs can't be larger than that, but we leave it to the scenario designer to avoid assigning larger graphics.
 					from_rect = get_monster_template_rect(pic, 0, 0);
 					int which_sheet = m_pic_index[pic].i / 20;
-					sf::Texture& monst_gworld = *ResMgr::get<ImageRsrc>("monst" + std::to_string(1 + which_sheet));
+					sf::Texture& monst_gworld = *ResMgr::graphics.get("monst" + std::to_string(1 + which_sheet));
 					rect_draw_some_item(monst_gworld,from_rect,mainPtr,to_rect,sf::BlendAlpha);
 				} else {
 					from_rect = calc_rect(2 * (pic / 8), pic % 8);
-					sf::Texture& pc_gworld = *ResMgr::get<ImageRsrc>("pcs");
+					sf::Texture& pc_gworld = *ResMgr::graphics.get("pcs");
 					rect_draw_some_item(pc_gworld,from_rect,mainPtr,to_rect,sf::BlendAlpha);
 				}
 				
-				style.pointSize = 11; // Clort was 14 
+				style.pointSize = 14;
 				pc_rect.offset(35,0);
 				win_draw_string(mainPtr,pc_rect,univ.party[i].name,eTextMode::WRAP,style);
 				to_rect.offset(pc_rect.left + 8,pc_rect.top + 8);
 				
 			}
-			style.pointSize = 11; // Clort was 12
+			style.pointSize = 12;
 			pc_rect.offset(12,16);
 			std::string status = "Level " + std::to_string(univ.party[i].level);
 			switch(univ.party[i].main_status) {
@@ -363,7 +401,7 @@ void draw_startup_stats() {
 #endif
 	std::string copyright = sout.str();
 	style.font = FONT_BOLD;
-	style.pointSize = 11;
+	style.pointSize = 10;
 	pc_rect = startup_top;
 	pc_rect.offset(5,5);
 	pc_rect.top = pc_rect.bottom - 30;
@@ -381,8 +419,7 @@ void draw_start_button(eStartButton which_position,short which_button) {
 	const char *button_labels[] = {"Load Game","Make New Party","Preferences",
 		"Start Scenario","Custom Scenario","Quit"};
 	// The 0..65535 version of the blue component was 14472; the commented version was 43144431
-	//sf::Color base_color = {0,0,57};
-	sf::Color base_color = {0,0,255}; // Clort make annoying
+	sf::Color base_color = {0,0,57};
 	
 	from_rect = startup_from[3];
 	from_rect.offset((which_button > 0) ? 40 : 0,0);
@@ -390,11 +427,11 @@ void draw_start_button(eStartButton which_position,short which_button) {
 	to_rect.left += 4; to_rect.top += 4;
 	to_rect.right = to_rect.left + 40;
 	to_rect.bottom = to_rect.top + 40;
-	rect_draw_some_item(*ResMgr::get<ImageRsrc>("startup"),from_rect,mainPtr,to_rect);
+	rect_draw_some_item(*ResMgr::graphics.get("startup",true),from_rect,mainPtr,to_rect);
 	
 	TextStyle style;
 	style.font = FONT_DUNGEON;
-	style.pointSize = 20; // Clort was 24 - now ClortDamsel
+	style.pointSize = 24;
 	to_rect = startup_button[which_position];
 	//to_rect.left += 80;
 	to_rect.offset(10, 5);
@@ -402,20 +439,9 @@ void draw_start_button(eStartButton which_position,short which_button) {
 		which_button = 4;
 	// In the 0..65535 range, this was 14472 + (12288 * which_button)
 	base_color.b += (48 * which_button);
-	style.colour = base_color; // Clort figure what this dark blue is for
+	style.colour = base_color;
 	style.lineHeight = 18;
 	win_draw_string(mainPtr,to_rect,button_labels[which_position],eTextMode::CENTRE,style);
-}
-
-void main_button_click(int which_button) {
-	mainPtr.setActive();
-	// TODO: Mini-event loop so that the click doesn't happen until releasing the mouse button
-	
-	draw_buttons(which_button);
-	mainPtr.display();
-	play_sound(37, time_in_ticks(5));
-	draw_buttons(-1);
-	undo_clip(mainPtr);
 }
 
 void arrow_button_click(rectangle button_rect) {
@@ -452,7 +478,7 @@ void end_startup() {
 }
 
 static void loadImageToRenderTexture(sf::RenderTexture& tex, std::string imgName) {
-	sf::Texture& temp_gworld = *ResMgr::get<ImageRsrc>(imgName);
+	sf::Texture& temp_gworld = *ResMgr::graphics.get(imgName);
 	rectangle texrect(temp_gworld);
 	tex.create(texrect.width(), texrect.height());
 	rect_draw_some_item(temp_gworld, texrect, tex, texrect, sf::BlendNone);
@@ -460,22 +486,25 @@ static void loadImageToRenderTexture(sf::RenderTexture& tex, std::string imgName
 
 void load_main_screen() {
 	// Preload the main game interface images
-	ResMgr::get<ImageRsrc>("invenbtns");
+	ResMgr::graphics.get("invenbtns");
 	loadImageToRenderTexture(terrain_screen_gworld, "terscreen");
 	loadImageToRenderTexture(pc_stats_gworld, "statarea");
 	loadImageToRenderTexture(item_stats_gworld, "inventory");
 	loadImageToRenderTexture(text_area_gworld, "transcript");
 	loadImageToRenderTexture(text_bar_gworld, "textbar");
-	ResMgr::get<ImageRsrc>("buttons");
+	ResMgr::graphics.get("buttons");
 }
 
 void redraw_screen(int refresh) {
 	// We may need to update some of the offscreen textures
-	// Clort debug if(refresh & REFRESH_TERRAIN) draw_terrain(1);
-	//if(refresh & REFRESH_STATS) put_pc_screen();
-	//if(refresh & REFRESH_INVEN) put_item_screen(stat_window);
-	//if(refresh & REFRESH_TRANS) print_buf();
-	
+	if(overall_mode != MODE_STARTUP) {
+		if(refresh & REFRESH_TERRAIN) draw_terrain(1);
+		if(refresh & REFRESH_STATS) put_pc_screen();
+		if(refresh & REFRESH_INVEN) put_item_screen(stat_window);
+		if(refresh & REFRESH_TRANS) print_buf();
+	}
+
+	// Temporarily switch to the original view to fill in the background
 	mainPtr.setView(mainPtr.getDefaultView());
 	put_background();
 	mainPtr.setView(mainView);
@@ -497,7 +526,7 @@ void redraw_screen(int refresh) {
 			if(refresh & REFRESH_BAR)
 				draw_text_bar();
 			refresh_text_bar();
-			draw_buttons(-1);
+			UI::toolbar.draw(mainPtr);
 			break;
 	}
 	if(overall_mode == MODE_COMBAT)
@@ -514,6 +543,9 @@ void redraw_screen(int refresh) {
 	shop_sbar->draw();
 	done_btn->draw();
 	help_btn->draw();
+
+	drawMenuBar();
+
 	mainPtr.display();
 }
 
@@ -548,81 +580,6 @@ void put_background() {
 		else bg_pict = bg[univ.scenario.bg_town];
 	}
 	tileImage(mainPtr, rectangle(mainPtr), bg_pict);
-}
-
-// mode; -1 - all buttons, normal; otherwise draw this button pressed
-void draw_buttons(short mode) {
-	rectangle lg_rect = {0,0,38,38}, sm_rect[2] = {{0,38,19,76}, {19,38,38,76}}, dest_rec;
-	static const int MAX_TOOLBAR_BUTTONS = 14;
-	static const location null_loc(-1,-1);
-	static const location out_buttons[MAX_TOOLBAR_BUTTONS] = {
-		{0,0}, {1,0}, {2,0}, {3,0}, {4,0}, {5,0}, {5,1}, null_loc, null_loc, null_loc, null_loc, null_loc, null_loc, null_loc
-	};
-	static const location town_buttons[MAX_TOOLBAR_BUTTONS] = {
-		{0,0}, {1,0}, {2,0}, {2,1}, {3,1}, {4,2}, {5,2}, {4,1}, null_loc, null_loc, null_loc, null_loc, null_loc, null_loc
-	};
-	static const location combat_buttons[MAX_TOOLBAR_BUTTONS] = {
-		{0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {0,2}, {2,2}, {1,2}, {3,2}, null_loc, null_loc, null_loc, null_loc, null_loc
-	};
-	extern rectangle bottom_buttons[MAX_TOOLBAR_BUTTONS];
-	
-	const location* toolbar = is_combat() ? combat_buttons : (is_town() ? town_buttons : out_buttons);
-	
-	static bool inited = false;
-	static sf::RenderTexture button_gw;
-	if(!inited) {
-		inited = true;
-		button_gw.create(266,38);
-	}
-	
-	sf::Texture& buttons_gworld = *ResMgr::get<ImageRsrc>("buttons");
-	dest_rec = lg_rect;
-	
-	bool bottom_half = false;
-	std::fill_n(bottom_buttons, MAX_TOOLBAR_BUTTONS, rectangle());
-	for(int i = 0; i < MAX_TOOLBAR_BUTTONS && toolbar[i] != null_loc; i++) {
-		rectangle source_rect = {0, 0, 32, 32};
-		rectangle to_rect = dest_rec, btn_rect, icon_rect;
-		source_rect.offset(32 * toolbar[i].x, 38 + 32 * toolbar[i].y);
-		if(toolbar[i].y == 2) {
-			// Small button
-			btn_rect = sm_rect[bottom_half];
-			source_rect.height() = 13;
-			to_rect.height() = 19;
-			if(bottom_half) {
-				to_rect.offset(0,19);
-				bottom_half = false;
-			} else bottom_half = true;
-			icon_rect = {3,3,13,13};
-		} else {
-			// Large button
-			btn_rect = lg_rect;
-			if(bottom_half) {
-				dest_rec.offset(38,0);
-				bottom_half = false;
-			}
-			icon_rect = {3,3,32,32};
-		}
-		if(mode == -1) {
-			rect_draw_some_item(buttons_gworld, btn_rect, button_gw, to_rect);
-			to_rect.inset(3,3);
-			rect_draw_some_item(buttons_gworld, source_rect, button_gw, to_rect, sf::BlendAlpha);
-			to_rect.inset(-3,-3);
-		}
-		to_rect.offset(win_to_rects[WINRECT_ACTBTNS].topLeft());
-		if(i == mode)
-			fill_rect(mainPtr, to_rect, sf::Color::Blue);
-		else fill_rect(mainPtr, to_rect, sf::Color::Black);
-		bottom_buttons[i] = to_rect;
-		if(toolbar[i].y != 2 || !bottom_half) {
-			dest_rec.offset(38,0);
-			bottom_half = false;
-		}
-	}
-	button_gw.display();
-	
-	dest_rec = win_to_rects[WINRECT_ACTBTNS];
-	rect_draw_some_item(button_gw.getTexture(), rectangle(button_gw), mainPtr, dest_rec, sf::BlendAdd);
 }
 
 void draw_text_bar() {
@@ -668,19 +625,22 @@ void draw_text_bar() {
 
 void put_text_bar(std::string str) {
 	text_bar_gworld.setActive();
-	rect_draw_some_item(*ResMgr::get<ImageRsrc>("textbar"), win_from_rects[WINRECT_STATUS], text_bar_gworld, win_from_rects[WINRECT_STATUS]);
+	auto& bar_gw = *ResMgr::graphics.get("textbar");
+	rect_draw_some_item(bar_gw, rectangle(bar_gw), text_bar_gworld, rectangle(bar_gw));
 	TextStyle style;
-	style.colour = CL_OFFWHITE; // Clort was white
+	style.colour = sf::Color::White;
 	style.font = FONT_BOLD;
 	style.pointSize = 11;
-	style.lineHeight = 11;
+	style.lineHeight = 14;
 	rectangle to_rect = rectangle(text_bar_gworld);
-	to_rect.top += 7;
+	to_rect.top += 5; // Clort was 7
+	to_rect.bottom += 3; // Clort was 7
+	//to_rect.height() = 14; // Clort was 7
 	to_rect.left += 5;
 	win_draw_string(text_bar_gworld, to_rect, str, eTextMode::LEFT_TOP, style);
 	
 	if(!monsters_going) {
-		sf::Texture& status_gworld = *ResMgr::get<ImageRsrc>("staticons");
+		sf::Texture& status_gworld = *ResMgr::graphics.get("staticons");
 		to_rect.top -= 2;
 		to_rect.left = to_rect.right - 15;
 		to_rect.width() = 12;
@@ -702,13 +662,12 @@ void put_text_bar(std::string str) {
 			to_rect.offset(-15, 0);
 		}
 	}
-	
 	text_bar_gworld.display();
 }
 
 void refresh_text_bar() {
 	mainPtr.setActive();
-	rect_draw_some_item(text_bar_gworld.getTexture(), win_from_rects[WINRECT_STATUS], mainPtr, win_to_rects[WINRECT_STATUS]);
+	rect_draw_some_item(text_bar_gworld.getTexture(), rectangle(text_bar_gworld), mainPtr, win_to_rects[WINRECT_STATUS]);
 }
 
 // this is used for determinign whether to round off walkway corners
@@ -768,9 +727,6 @@ void draw_terrain(short	mode) {
 	
 	sector_p_in.x = univ.party.outdoor_corner.x + univ.party.i_w_c.x;
 	sector_p_in.y = univ.party.outdoor_corner.y + univ.party.i_w_c.y;
-	
-	anim_ticks++;
-	anim_onscreen = false;
 	
 	if(is_town())
 		view_loc = univ.party.town_loc;
@@ -939,7 +895,7 @@ void draw_terrain(short	mode) {
 		draw_monsters();
 	}
 	
-	if((overall_mode < MODE_COMBAT) || (overall_mode == MODE_LOOK_OUTDOORS) || ((overall_mode == MODE_LOOK_TOWN) && (point_onscreen(univ.party.town_loc,center)))
+	if(is_out() || (is_town() && point_onscreen(univ.party.town_loc,center))
 		|| (overall_mode == MODE_RESTING))
 		draw_party_symbol(center);
 	else if(overall_mode != MODE_LOOK_TOWN)
@@ -947,10 +903,9 @@ void draw_terrain(short	mode) {
 	// Draw top half of forcecages (this list is populated by draw_fields)
 	// TODO: Move into the above loop to eliminate global variable
 	for(location fc_loc : forcecage_locs)
-		Draw_Some_Item(*ResMgr::get<ImageRsrc>("fields"),calc_rect(2,0),terrain_screen_gworld,fc_loc,1,0);
+		Draw_Some_Item(*ResMgr::graphics.get("fields"),calc_rect(2,0),terrain_screen_gworld,fc_loc,1,0);
 	// Draw any posted labels, then clear them out
-	// Clort orig clip_rect(terrain_screen_gworld, {13, 13, 337, 265});
-	clip_rect(terrain_screen_gworld, {13, 13, 337, 194});
+	clip_rect(terrain_screen_gworld, {13, 13, 337, 265});
 	for(text_label_t lbl : posted_labels)
 		draw_text_label(lbl);
 	undo_clip(terrain_screen_gworld);
@@ -965,7 +920,7 @@ void draw_terrain(short	mode) {
 	if(mode == 0) {
 		redraw_terrain();
 		draw_text_bar();
-		if((overall_mode >= MODE_COMBAT) && (overall_mode != MODE_LOOK_OUTDOORS) && (overall_mode != MODE_LOOK_TOWN) && (overall_mode != MODE_RESTING))
+		if(is_combat())
 			frame_active_pc(center);
 		if(overall_mode == MODE_FANCY_TARGET)
 			draw_targets(center);
@@ -1115,7 +1070,7 @@ static void init_trim_mask(std::unique_ptr<sf::Texture>& mask, rectangle src_rec
 	std::tie(dest_rect.top, dest_rect.bottom) = std::make_tuple(36 - dest_rect.top, 36 - dest_rect.bottom);
 	render.create(28, 36);
 	render.clear(sf::Color::White);
-	rect_draw_some_item(*ResMgr::get<ImageRsrc>("trim"), src_rect, render, dest_rect);
+	rect_draw_some_item(*ResMgr::graphics.get("trim"), src_rect, render, dest_rect);
 	render.display();
 	mask.reset(new sf::Texture);
 	mask->create(28, 36);
@@ -1148,7 +1103,7 @@ void draw_trim(short q,short r,short which_trim,ter_num_t ground_ter) {
 	};
 	static std::unique_ptr<sf::Texture> trim_masks[12], walkway_masks[9];
 	rectangle from_rect = {0,0,36,28},to_rect;
-	sf::Texture* from_gworld;
+	std::shared_ptr<const sf::Texture> from_gworld;
 	sf::Texture* mask;
 	static bool inited = false;
 	if(!inited){
@@ -1176,11 +1131,11 @@ void draw_trim(short q,short r,short which_trim,ter_num_t ground_ter) {
 	unsigned short pic = univ.scenario.ter_types[ground_ter].picture;
 	if(pic < 960){
 		int which_sheet = pic / 50;
-		from_gworld = ResMgr::get<ImageRsrc>("ter" + std::to_string(1 + which_sheet)).get();
+		from_gworld = &ResMgr::graphics.get("ter" + std::to_string(1 + which_sheet));
 		pic %= 50;
 		from_rect.offset(28 * (pic % 10), 36 * (pic / 10));
 	}else if(pic < 1000){
-		from_gworld = ResMgr::get<ImageRsrc>("teranim").get();
+		from_gworld = &ResMgr::graphics.get("teranim");
 		pic -= 960;
 		from_rect.offset(112 * (pic / 5),36 * (pic % 5));
 	}else{
@@ -1262,7 +1217,7 @@ void place_road(short q,short r,location where,bool here) {
 		{16,12,20,16},	// central spot
 	};
 	
-	sf::Texture& roads_gworld = *ResMgr::get<ImageRsrc>("trim");
+	sf::Texture& roads_gworld = *ResMgr::graphics.get("trim");
 	
 	if(here){
 		to_rect = road_dest_rects[6];
@@ -1402,7 +1357,7 @@ void boom_space(location where,short mode,short type,short damage,short sound) {
 		return;
 	
 	// Redraw terrain in proper position
-	if(((!point_onscreen(center,where) && (overall_mode >= MODE_COMBAT)) || (overall_mode == MODE_OUTDOORS))
+	if(((!point_onscreen(center,where) && is_combat()) || (overall_mode == MODE_OUTDOORS))
 		) {
 		play_sound(sound_to_play);
 		
@@ -1439,7 +1394,7 @@ void boom_space(location where,short mode,short type,short damage,short sound) {
 	dest_rect.offset(win_to_rects[WINRECT_TERVIEW].topLeft());
 	
 	source_rect.offset(-store_rect.left + 28 * type,-store_rect.top);
-	rect_draw_some_item(*ResMgr::get<ImageRsrc>("booms"),source_rect,mainPtr,dest_rect,sf::BlendAlpha);
+	rect_draw_some_item(*ResMgr::graphics.get("booms"),source_rect,mainPtr,dest_rect,sf::BlendAlpha);
 	
 	if(damage > 0 && dest_rect.right - dest_rect.left >= 28 && dest_rect.bottom - dest_rect.top >= 36) {
 		TextStyle style;
@@ -1449,12 +1404,12 @@ void boom_space(location where,short mode,short type,short damage,short sound) {
 		text_rect.height() = 10;
 		text_rect.offset(x_adj,y_adj);
 		std::string dam_str = std::to_string(damage);
-		style.colour = CL_OFFWHITE; // Clort was white
+		style.colour = sf::Color::White;
 		text_rect.offset(-1,-1);
 		win_draw_string(mainPtr,text_rect,dam_str,eTextMode::CENTRE,style);
 		text_rect.offset(2,2);
 		win_draw_string(mainPtr,text_rect,dam_str,eTextMode::CENTRE,style);
-		style.colour = CL_BLACK; // Clort was pureblack
+		style.colour = sf::Color::Black;
 		text_rect.offset(-1,-1);
 		win_draw_string(mainPtr,text_rect,dam_str,eTextMode::CENTRE,style);
 	}
@@ -1471,7 +1426,7 @@ void boom_space(location where,short mode,short type,short damage,short sound) {
 			sf::sleep(time_in_ticks(del_len));
 	}
 	redraw_terrain();
-	if((overall_mode >= MODE_COMBAT/*9*/) && (overall_mode != MODE_LOOK_OUTDOORS) && (overall_mode != MODE_LOOK_TOWN) && (overall_mode != MODE_RESTING))
+	if(is_combat())
 		frame_active_pc(center);
 }
 
@@ -1512,10 +1467,9 @@ void draw_pointing_arrows() {
 }
 
 void redraw_terrain() {
-	rectangle to_rect;
-	
-	to_rect = win_to_rects[WINRECT_TERVIEW];
-	rect_draw_some_item(terrain_screen_gworld.getTexture(), win_from_rects[WINRECT_TERVIEW], mainPtr, to_rect);
+	rectangle to_rect = win_to_rects[WINRECT_TERVIEW], from_rect(terrain_screen_gworld);
+	from_rect.bottom -= 10; // Clip off the little arrows TODO: Maybe move them to another sheet?
+	rect_draw_some_item(terrain_screen_gworld.getTexture(), from_rect, mainPtr, to_rect);
 	apply_light_mask(true);
 	
 	
@@ -1530,7 +1484,7 @@ void draw_targets(location center) {
 	if(!univ.party.is_alive())
 		return;
 	
-	sf::Texture& src_gworld = *ResMgr::get<ImageRsrc>("trim");
+	sf::Texture& src_gworld = *ResMgr::graphics.get("trim");
 	for(short i = 0; i < 8; i++)
 		if((spell_targets[i].x != -1) && (point_onscreen(center,spell_targets[i]))) {
 			rectangle dest_rect = coord_to_rect(spell_targets[i].x - center.x + 4,spell_targets[i].y - center.y + 4);
@@ -1556,7 +1510,7 @@ void frame_space(location where,short mode,short width,short height) {
 	to_frame.right = 41 + where_put.x * 28 + 28 * (width - 1);
 	to_frame.offset(win_to_rects[WINRECT_TERVIEW].topLeft());
 	
-	frame_roundrect(mainPtr, to_frame, 8, (mode == 0) ? sf::Color::Red : sf::Color::Green);
+	frame_roundrect(mainPtr, to_frame, 8, (mode == 0) ? Colours::RED : Colours::GREEN);
 }
 
 
@@ -1624,7 +1578,7 @@ void draw_targeting_line(location where_curs) {
 							if((overall_mode == MODE_FANCY_TARGET) && (store_loc.x - which_space.x + 4 == 4)
 								&& (store_loc.y - which_space.y + 4 == 4)) {
 								TextStyle style;
-								style.colour = CL_OFFWHITE; // Clort was white
+								style.colour = sf::Color::White;
 								style.lineHeight = 12;
 								const char chr[2] = {static_cast<char>(num_targets_left + '0')};
 								int x = ((target_rect.left + target_rect.right) / 2) - 3;

@@ -14,21 +14,16 @@
 void TextStyle::applyTo(sf::Text& text) {
 	switch(font) {
 		case FONT_PLAIN:
-			//text.setFont(*ResMgr::get<FontRsrc>("plain"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortSans-11.bdf")); //Clort load bdf font instead of 'plain'
+			text.setFont(*ResMgr::fonts.get("plain"));
 			break;
 		case FONT_BOLD:
-			//text.setFont(*ResMgr::get<FontRsrc>("bold"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortSans-11.bdf")); //Clort load bdf font instead of 'bold'
-
+			text.setFont(*ResMgr::fonts.get("bold"));
 			break;
 		case FONT_DUNGEON:
-			//text.setFont(*ResMgr::get<FontRsrc>("dungeon"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortDamsel-20.bdf"));
+			text.setFont(*ResMgr::fonts.get("dungeon"));
 			break;
 		case FONT_MAIDWORD:
-			//text.setFont(*ResMgr::get<FontRsrc>("maidenword"));
-			text.setFont(*ResMgr::get<FontRsrc>("ClortDamsel-20.bdf")); //Clort load bdf font instead of 'maidenword'
+			text.setFont(*ResMgr::fonts.get("maidenword"));
 			break;
 	}
 	text.setCharacterSize(pointSize);
@@ -94,8 +89,6 @@ static void win_draw_string(sf::RenderTarget& dest_window,rectangle dest_rect,st
 	short line_height = options.style.lineHeight;
 	sf::Text str_to_draw;
 	options.style.applyTo(str_to_draw);
-        if (options.style.font==FONT_BOLD) str_to_draw.setLetterSpacing(2.0); //Clort test a wider kerning
-
 	short str_len;
 	unsigned short last_line_break = 0,last_word_break = 0;
 	short total_width = 0;
